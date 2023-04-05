@@ -1,0 +1,33 @@
+pasta = { block* }
+
+block = { comment_line }
+
+
+// scene
+scene1_header = _{ SCENE_MARK ~ SCENE_MARK{1} }
+scene2_header = _{ SCENE_MARK ~ SCENE_MARK{2} }
+scene3_header = _{ SCENE_MARK ~ SCENE_MARK{3} }
+scene4_header = _{ SCENE_MARK ~ SCENE_MARK{4} }
+
+scene1_line = { scene1_header ~ SPACES? ~ IDENTIFIER ~ comment? ~ NEWLINE }
+scene2_line = { scene2_header ~ SPACES? ~ IDENTIFIER ~ comment? ~ NEWLINE }
+scene3_line = { scene3_header ~ SPACES? ~ IDENTIFIER ~ comment? ~ NEWLINE }
+scene4_line = { scene4_header ~ SPACES? ~ IDENTIFIER ~ comment? ~ NEWLINE }
+
+
+// comment
+comment_line = @{ comment ~ NEWLINE }
+comment = @{ SPACES? ~ COMMENT_MARK ~ (!"\n" ~ ANY)* }
+COMMENT_MARK = _{ "//" | "\\\\" | "￥￥" }
+
+// CRLF
+
+// id
+IDENTIFIER = @{ (XID_START | '_' ) ~ XID_CONTINUE* }
+
+// MARK
+SCENE_MARK = _{ ':' | '；' }
+
+// SPACES / NEWLINE
+SPACES = @{ WS+ }
+WS = _{ " " | "\t" | "\u{2000}" … "\u{200A}" | "\u{202F}" | "\u{205F}" | "\u{3000}" }
