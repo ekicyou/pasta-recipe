@@ -1,6 +1,30 @@
-pasta = { block* }
+pasta = { SOI ~ block* ~ EOI }
 
 block = { comment_line }
+
+
+
+
+// comment
+comment = @{ SPACES? ~ COMMENT_MARK ~ (!NEWLINE ~ ANY)* }
+COMMENT_MARK = _{ COMMENT_CHAR ~ COMMENT_CHAR{1} }
+COMMENT_CHAR = _{ "/" | "\\" | "￥" }
+
+// comment_eol（コメントを含む行終端）
+comment_eol = _{ SPACES? ~ comment? ~ EOL }
+
+// blank_line （必ず１文字以上の要素を消費することを保証する）
+blank_line  = @{ blank_line1 | blank_line2 | blank_line3 }
+blank_line1 = @{ SPACES ~ comment? ~ EOL }
+blank_line2 = @{          comment  ~ EOL }
+blank_line3 = @{                     NEWLINE }
+
+// comment_line（コメントだけの行）
+comment_line = @{ comment ~ EOL }
+
+
+// id_attr（属性を含む識別子）
+id_attr = { SPACES? ~ IDENTIFIER ~ attr* }
 
 
 // scene
@@ -9,25 +33,25 @@ scene2_header = _{ SCENE_MARK ~ SCENE_MARK{2} }
 scene3_header = _{ SCENE_MARK ~ SCENE_MARK{3} }
 scene4_header = _{ SCENE_MARK ~ SCENE_MARK{4} }
 
-scene1_line = { scene1_header ~ SPACES? ~ IDENTIFIER ~ comment? ~ NEWLINE }
-scene2_line = { scene2_header ~ SPACES? ~ IDENTIFIER ~ comment? ~ NEWLINE }
-scene3_line = { scene3_header ~ SPACES? ~ IDENTIFIER ~ comment? ~ NEWLINE }
-scene4_line = { scene4_header ~ SPACES? ~ IDENTIFIER ~ comment? ~ NEWLINE }
+scene_id      = { id_attr }
+
+scene1_line = { scene1_header ~ scene_value ~ comment_eol }
+scene2_line = { scene2_header ~ scene_value ~ comment_eol }
+scene3_line = { scene3_header ~ scene_value ~ comment_eol }
+scene4_line = { scene4_header ~ scene_value ~ comment_eol }
 
 
-// comment
-comment_line = @{ comment ~ NEWLINE }
-comment = @{ SPACES? ~ COMMENT_MARK ~ (!"\n" ~ ANY)* }
-COMMENT_MARK = _{ "//" | "\\\\" | "￥￥" }
 
-// CRLF
+// CRLF、EOL
+
+EOL = _{ NEWLINE | EOI }
 
 // id
-IDENTIFIER = @{ (XID_START | '_' ) ~ XID_CONTINUE* }
+IDENTIFIER = @{ ( "_" | XID_START ) ~ XID_CONTINUE* }
 
 // MARK
-SCENE_MARK = _{ ':' | '；' }
+SCENE_MARK = _{ ":" | "；" }
 
 // SPACES / NEWLINE
-SPACES = @{ WS+ }
-WS = _{ " " | "\t" | "\u{2000}" … "\u{200A}" | "\u{202F}" | "\u{205F}" | "\u{3000}" }
+SPACES = _{ WS+ }
+WS = _{ !NEWLINE ~ WHITE_SPACE }
