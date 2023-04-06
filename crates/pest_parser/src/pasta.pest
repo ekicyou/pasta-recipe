@@ -1,21 +1,15 @@
-pasta = { SOI ~ block* ~ EOI }
+pasta = _{ SOI ~ block* ~ EOI }
+block = _{ scene4 | scene3 | scene2 | scene1 }
 
-block = { comment_line }
-
-
-
-
-
-
+// EOL, SPACES
+EOL = _{ NEWLINE | EOI }
+SPACES = _{ WS+ }
+WS = _{ !NEWLINE ~ WHITE_SPACE }
 
 // comment
-comment = @{ SPACES? ~ COMMENT_MARK ~ (!NEWLINE ~ ANY)* }
-COMMENT_MARK = _{ PUSH(COMMENT_CHAR) ~ POP }
-//COMMENT_MARK = _{ COMMENT_CHAR ~  COMMENT_CHAR{1} }
 COMMENT_CHAR = _{ "/" | "\\" | "￥" }
-
-// comment_eol（コメントを含む行終端）
-comment_eol = _{ SPACES? ~ comment? ~ EOL }
+COMMENT_MARK = _{ PUSH(COMMENT_CHAR) ~ POP }
+comment = @{ SPACES? ~ COMMENT_MARK ~ (!NEWLINE ~ ANY)* }
 
 // blank_line （必ず１文字以上の要素を消費することを保証する）
 blank_line  = @{ blank_line1 | blank_line2 | blank_line3 }
@@ -25,6 +19,9 @@ blank_line3 = @{                     NEWLINE }
 
 // comment_line（コメントだけの行）
 comment_line = @{ comment ~ EOL }
+
+// comment_eol（コメントを含む行終端）
+comment_eol = _{ SPACES? ~ comment? ~ EOL }
 
 // expr
 NUM0 = @{ "0" | "０" }
@@ -47,17 +44,19 @@ expr =  { term }
 term = _{ id | num }
 
 // id
-id      = @{ IDENTIFIER }
+IDENTIFIER = _{ ( "_" | XID_START ) ~ XID_CONTINUE* }
+id         = @{ IDENTIFIER }
 
 // attr（属性）
 AT      = _{ "@" | "＠" }
-attrs   = { attr* }
-attr    = { SPACES ~ id ~ AT ~ expr }
+attrs   = { ( SPACES ~ attr )* }
+attr    = { id ~ AT ~ expr }
 
 // id_attr（属性を含む識別子）
 id_attr =  { SPACES? ~ id ~ attrs }
 
-// scene
+// シーン・タイトル
+SCENE_MARK = _{ ":" | "；" }
 SCENE1 = _{ PUSH(SCENE_MARK)           ~ POP }
 SCENE2 = _{ PUSH(SCENE_MARK) ~ PEEK{1} ~ POP }
 SCENE3 = _{ PUSH(SCENE_MARK) ~ PEEK{2} ~ POP }
@@ -68,18 +67,54 @@ scene2_line = { SCENE2 ~ id_attr ~ comment_eol }
 scene3_line = { SCENE3 ~ id_attr ~ comment_eol }
 scene4_line = { SCENE4 ~ id_attr ~ comment_eol }
 
+// タイトルは、複数のタイトルコメント行 ~ タイトルヘッダ行 ~ 複数個の下位タイトルを含む
+scene4 = { blank_line* ~ scene4_line ~ scene3* }
+scene3 = { blank_line* ~ scene3_line ~ scene2* }
+scene2 = { blank_line* ~ scene2_line ~ scene1* }
 
+// シーンには、複数のシーンコメント行 ~ シーンヘッダ行 ~ 複数個の柱を含む
+scene1 = { blank_line* ~ scene1_line ~ hashira* }
 
-// CRLF、EOL
+// 柱
+HASHIRA_MARK = _{ AT }
+HASHIRA      = _{ HASHIRA_MARK }
 
-EOL = _{ NEWLINE | EOI }
+hashira       =  { blank_line* ~ hashira_line ~ hashira_child* }
+hashira_line  =  { HASHIRA ~ id_attr ~ comment_eol }
+hashira_child = _{ togaki | jump | cut | serif }
 
-// id
-IDENTIFIER = @{ ( "_" | XID_START ) ~ XID_CONTINUE* }
+// ト書き
+TOGAKI_MARK = _{ SCENE_MARK }
+TOGAKI      = _{ TOGAKI_MARK }
 
-// MARK
-SCENE_MARK = _{ ":" | "；" }
+togaki_attr =  { id | attr ~ ( SPACES ~ attr )* }
+togaki_line = _{ SPACES ~ TOGAKI ~ togaki_attr ~ comment_eol }
+togaki      =  { blank_line* ~ togaki_line }
 
-// SPACES / NEWLINE
-SPACES = _{ WS+ }
-WS = _{ !NEWLINE ~ WHITE_SPACE }
+// セリフ
+serif1 = _{ id ~ SPACES ~ talk ~ comment_eol }
+serif2 = _{      SPACES ~ talk ~ comment_eol }
+serif  =  { blank_line* ~ serif1 ~ ( !jump ~ serif2)* }
+
+// トーク
+talk = { ( escape_talk | command_talk | normal_talk )+ }
+normal_talk  = @{ ( !( COMMENT_CHAR | EOL ) ~ ANY )+ }
+escape_talk  = _{ AT ~ escape_char  }
+escape_char  = @{ AT | COMMENT_CHAR }
+command_talk =  { AT ~ id ~ SPACES? }
+
+// ジャンプ
+JUMP_MARK   = _{ ">" | "＞" }
+JUMP_LOCAL  = _{ JUMP_MARK }
+JUMP_GLOBAL = _{ PUSH(JUMP_MARK) ~ POP }
+
+jump_id     = _{ id ~ ( AT ~ id )* }
+jump_args   = _{ jump_id ~ comment_eol }
+jump_local  =  { JUMP_LOCAL  ~ jump_args }
+jump_global =  { JUMP_GLOBAL ~ jump_args }
+jump        = _{ blank_line* ~ SPACES ~ ( jump_global | jump_local ) }
+
+// カット（チェイントーク区切り）
+CUT_MARK = _{ "-" | "－" | "ー" }
+CUT      = _{ PUSH(CUT_MARK) ~ PEEK{2} ~ POP }
+cut      =  { blank_line* ~ CUT ~ comment_eol }
