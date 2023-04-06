@@ -24,15 +24,14 @@ fn id_attr_test() {
         rule: Rule::id_attr,
         tokens: [
             id_attr(0, 14, [
-                id(0, 3),
-                attrs(3, 14, [
-                    attr(3, 8, [
+                id(0, 3), attrs(3, 14, [
+                    attr(4, 8, [
                         id(4, 5),
                         expr(6, 8, [
                             num(6, 8, [NUM1(6, 7), NUM0(7, 8)])
                         ])
                     ]),
-                    attr(8, 14, [
+                    attr(9, 14, [
                         id(9, 10),
                         expr(11, 14, [id(11, 14)])
                     ])
