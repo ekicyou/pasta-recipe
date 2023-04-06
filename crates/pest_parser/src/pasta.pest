@@ -5,9 +5,13 @@ block = { comment_line }
 
 
 
+
+
+
 // comment
 comment = @{ SPACES? ~ COMMENT_MARK ~ (!NEWLINE ~ ANY)* }
-COMMENT_MARK = _{ COMMENT_CHAR ~ COMMENT_CHAR{1} }
+COMMENT_MARK = _{ PUSH(COMMENT_CHAR) ~ POP }
+//COMMENT_MARK = _{ COMMENT_CHAR ~  COMMENT_CHAR{1} }
 COMMENT_CHAR = _{ "/" | "\\" | "￥" }
 
 // comment_eol（コメントを含む行終端）
@@ -22,23 +26,47 @@ blank_line3 = @{                     NEWLINE }
 // comment_line（コメントだけの行）
 comment_line = @{ comment ~ EOL }
 
+// expr
+NUM0 = @{ "0" | "０" }
+NUM1 = @{ "1" | "１" }
+NUM2 = @{ "2" | "２" }
+NUM3 = @{ "3" | "３" }
+NUM4 = @{ "4" | "４" }
+NUM5 = @{ "5" | "５" }
+NUM6 = @{ "6" | "６" }
+NUM7 = @{ "7" | "７" }
+NUM8 = @{ "8" | "８" }
+NUM9 = @{ "9" | "９" }
+non_zero_digit = _{        NUM1 | NUM2 | NUM3 | NUM4 | NUM5 | NUM6 | NUM7 | NUM8 | NUM9 }
+digit          = _{ NUM0 | NUM1 | NUM2 | NUM3 | NUM4 | NUM5 | NUM6 | NUM7 | NUM8 | NUM9 }
+num            = { non_zero_digit ~ digit+ | digit }
+
+LP   = _{ "(" | "（" }
+RP   = _{ ")" | "）" }
+expr =  { term }
+term = _{ id | num }
+
+// id
+id      = @{ IDENTIFIER }
+
+// attr（属性）
+AT      = _{ "@" | "＠" }
+attrs   = { attr* }
+attr    = { SPACES ~ id ~ AT ~ expr }
 
 // id_attr（属性を含む識別子）
-id_attr = { SPACES? ~ IDENTIFIER ~ attr* }
-
+id_attr =  { SPACES? ~ id ~ attrs }
 
 // scene
-scene1_header = _{ SCENE_MARK ~ SCENE_MARK{1} }
-scene2_header = _{ SCENE_MARK ~ SCENE_MARK{2} }
-scene3_header = _{ SCENE_MARK ~ SCENE_MARK{3} }
-scene4_header = _{ SCENE_MARK ~ SCENE_MARK{4} }
+SCENE1 = _{ PUSH(SCENE_MARK)           ~ POP }
+SCENE2 = _{ PUSH(SCENE_MARK) ~ PEEK{1} ~ POP }
+SCENE3 = _{ PUSH(SCENE_MARK) ~ PEEK{2} ~ POP }
+SCENE4 = _{ PUSH(SCENE_MARK) ~ PEEK{3} ~ POP }
 
-scene_id      = { id_attr }
-
-scene1_line = { scene1_header ~ scene_value ~ comment_eol }
-scene2_line = { scene2_header ~ scene_value ~ comment_eol }
-scene3_line = { scene3_header ~ scene_value ~ comment_eol }
-scene4_line = { scene4_header ~ scene_value ~ comment_eol }
+scene1_line = { SCENE1 ~ id_attr ~ comment_eol }
+scene2_line = { SCENE2 ~ id_attr ~ comment_eol }
+scene3_line = { SCENE3 ~ id_attr ~ comment_eol }
+scene4_line = { SCENE4 ~ id_attr ~ comment_eol }
 
 
 
