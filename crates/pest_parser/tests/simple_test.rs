@@ -1,6 +1,60 @@
 use pasta_parser_pest::*;
 
 #[test]
+fn togaki() {
+    let rule = Rule::togaki;
+    let input = "　\n\n　　：表情￥￥こめんと";
+    {
+        let pairs = PastaParser::parse(rule, input).unwrap_or_else(|e| panic!("{}", e));
+        println!("pairs:\n{}\n", pairs);
+    }
+    parses_to! {
+        parser: PastaParser,
+        input: input,
+        rule: Rule::togaki,
+        tokens: [togaki(0, 38, [
+            blank_lines(0, 5),
+            togaki_attr(14, 20, [emote(14, 20)]),
+            comment(20, 38, [comment_word(26, 38)]),
+            EOI(38, 38)]
+        )]
+    };
+}
+
+#[test]
+fn hashira() {
+    let rule = Rule::hashira;
+    let input = "   \n\n＠柱　属性＠１￥￥こめんと\n----";
+    {
+        let pairs = PastaParser::parse(rule, input).unwrap_or_else(|e| panic!("{}", e));
+        println!("pairs:\n{}\n", pairs);
+    }
+    parses_to! {
+        parser: PastaParser,
+        input: input,
+        rule: Rule::hashira,
+        tokens:[hashira(0, 49, [
+            blank_lines(0, 5),
+            hashira_head(5, 45, [
+                id_attr(8, 26, [
+                    id(8, 11),
+                    attrs(11, 26, [
+                        attr(14, 26, [
+                            id(14, 20),
+                            expr(23, 26, [
+                                num(23, 26, [NUM1(23, 26)])
+                                ])
+                            ])
+                        ])
+                    ]),
+                    comment(26, 44, [comment_word(32, 44)])
+                ]),
+            cut(45, 49, [EOI(49, 49)])])
+        ]
+    };
+}
+
+#[test]
 fn hashira_head() {
     let rule = Rule::hashira_head;
     let input = "＠柱　属性＠１￥￥こめんと";
@@ -18,6 +72,22 @@ fn hashira_head() {
                 comment(21, 39, [comment_word(27, 39)]),
                 EOI(39, 39)
             ])]
+    };
+}
+
+#[test]
+fn hashira_head2() {
+    let rule = Rule::hashira_head;
+    let input = "＠";
+    {
+        let pairs = PastaParser::parse(rule, input).unwrap_or_else(|e| panic!("{}", e));
+        println!("pairs:\n{}\n", pairs);
+    }
+    parses_to! {
+        parser: PastaParser,
+        input: input,
+        rule: Rule::hashira_head,
+        tokens: [hashira_head(0, 3, [EOI(3, 3)])]
     };
 }
 
@@ -125,90 +195,138 @@ fn blank_line() {
         let input = "   　";
         let pairs =
             PastaParser::parse(Rule::blank_line1, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
     }
     {
         let input = "   //comment";
         let pairs =
             PastaParser::parse(Rule::blank_line1, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
     }
     {
         let input = "   //comment\n";
         let pairs =
             PastaParser::parse(Rule::blank_line1, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
     }
     {
         let input = "   //comment\n\n";
         let pairs =
             PastaParser::parse(Rule::blank_line1, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
     }
     {
         let input = "//comment";
         let pairs =
             PastaParser::parse(Rule::blank_line2, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
     }
     {
         let input = "￥￥こめんと";
         let pairs =
             PastaParser::parse(Rule::blank_line2, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
     }
     {
         let input = "\n";
         let pairs =
             PastaParser::parse(Rule::blank_line3, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
     }
     {
         let input = "\r\n";
         let pairs =
             PastaParser::parse(Rule::blank_line3, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
     }
 
     {
         let input = "   　";
         let pairs = PastaParser::parse(Rule::blank_line, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
+        parses_to! {
+            parser: PastaParser,
+            input: input,
+            rule: Rule::blank_line,
+            tokens: [blank_line(0, 6)]
+        };
     }
     {
         let input = "   //comment";
         let pairs = PastaParser::parse(Rule::blank_line, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
+        parses_to! {
+            parser: PastaParser,
+            input: input,
+            rule: Rule::blank_line,
+            tokens: [blank_line(0, 12)]
+        };
     }
     {
         let input = "   //comment\n";
         let pairs = PastaParser::parse(Rule::blank_line, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
+        parses_to! {
+            parser: PastaParser,
+            input: input,
+            rule: Rule::blank_line,
+            tokens: [blank_line(0, 13)]
+        };
     }
     {
         let input = "   //comment\n\n";
         let pairs = PastaParser::parse(Rule::blank_line, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
+        parses_to! {
+            parser: PastaParser,
+            input: input,
+            rule: Rule::blank_line,
+            tokens: [blank_line(0, 13)]
+        };
     }
     {
         let input = "//comment";
         let pairs = PastaParser::parse(Rule::blank_line, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
+        parses_to! {
+            parser: PastaParser,
+            input: input,
+            rule: Rule::blank_line,
+            tokens: [blank_line(0, 9)]
+        };
     }
     {
         let input = "￥￥こめんと";
         let pairs = PastaParser::parse(Rule::blank_line, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
+        parses_to! {
+            parser: PastaParser,
+            input: input,
+            rule: Rule::blank_line,
+            tokens: [blank_line(0, 18)]
+        };
     }
     {
         let input = "\n";
         let pairs = PastaParser::parse(Rule::blank_line, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
+        parses_to! {
+            parser: PastaParser,
+            input: input,
+            rule: Rule::blank_line,
+            tokens: [blank_line(0, 1)]
+        };
     }
     {
         let input = "\r\n";
         let pairs = PastaParser::parse(Rule::blank_line, input).unwrap_or_else(|e| panic!("{}", e));
-        println!("pairs:{:?}", pairs);
+        println!("pairs:\n{}\n", pairs);
+        parses_to! {
+            parser: PastaParser,
+            input: input,
+            rule: Rule::blank_line,
+            tokens: [blank_line(0, 2)]
+        };
     }
 }
 

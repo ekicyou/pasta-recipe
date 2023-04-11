@@ -20,11 +20,13 @@ blank_line1 = @{ SPACES ~ comment? ~ EOL }
 blank_line2 = @{ comment ~ EOL }
 blank_line3 = @{ NEWLINE }
 
+blank_lines = @{ blank_line+ }
+
 // comment_line（コメントだけの行）
 comment_line = @{ comment ~ EOL }
 
 // comment_eol（コメントを含む行終端）
-comment_eol  = _{ SPACES? ~ comment? ~ EOL }
+COMMENT_EOL  = _{ SPACES? ~ comment? ~ EOL }
 
 // expr
 NUM0           = @{ "0" | "０" }
@@ -58,6 +60,9 @@ attr  =  { id ~ AT ~ expr }
 // id_attr（属性を含む識別子）
 id_attr = { SPACES? ~ id ~ attrs }
 
+//　＃＃ 行冒頭がスペース以外のアイテム　＃＃
+
+
 // シーン・タイトル
 SCENE_MARK = _{ ":" | "：" }
 SCENE1     = _{ PUSH(SCENE_MARK) ~ POP }
@@ -66,59 +71,66 @@ SCENE3     = _{ PUSH(SCENE_MARK) ~ PEEK{2} ~ POP }
 SCENE4     = _{ PUSH(SCENE_MARK) ~ PEEK{3} ~ POP }
 
 scene_head  =  { id_attr }
-scene1_line = _{ SCENE1 ~ scene_head ~ comment_eol }
-scene2_line = _{ SCENE2 ~ scene_head ~ comment_eol }
-scene3_line = _{ SCENE3 ~ scene_head ~ comment_eol }
-scene4_line = _{ SCENE4 ~ scene_head ~ comment_eol }
+scene1_line = _{ SCENE1 ~ scene_head ~ COMMENT_EOL }
+scene2_line = _{ SCENE2 ~ scene_head ~ COMMENT_EOL }
+scene3_line = _{ SCENE3 ~ scene_head ~ COMMENT_EOL }
+scene4_line = _{ SCENE4 ~ scene_head ~ COMMENT_EOL }
 
 // タイトルは、複数のタイトルコメント行 ~ タイトルヘッダ行 ~ 複数個の下位タイトルを含む
-scene4 = { blank_line* ~ scene4_line ~ scene3* }
-scene3 = { blank_line* ~ scene3_line ~ scene2* }
-scene2 = { blank_line* ~ scene2_line ~ scene1* }
+scene4 = { blank_lines? ~ scene4_line ~ scene3* }
+scene3 = { blank_lines? ~ scene3_line ~ scene2* }
+scene2 = { blank_lines? ~ scene2_line ~ scene1* }
 
 // シーンには、複数のシーンコメント行 ~ シーンヘッダ行 ~ 複数個の柱を含む
-scene1 = { blank_line* ~ scene1_line ~ hashira* }
+scene1 = { blank_lines? ~ scene1_line ~ hashira* }
 
 // 柱
 HASHIRA_MARK = _{ AT }
 HASHIRA      = _{ HASHIRA_MARK }
 
-hashira      =  { blank_line* ~ hashira_head ~ hashira_next+ }
-hashira_head =  { HASHIRA ~ id_attr ~ comment_eol }
-hashira_next = _{ togaki | jump | cut | serif }
-
-// ト書き
-TOGAKI_MARK = @{ SCENE_MARK }
-TOGAKI      = _{ TOGAKI_MARK }
-
-togaki_attr =  { id | attr ~ (SPACES ~ attr)* }
-togaki_line = _{ SPACES ~ TOGAKI ~ togaki_attr ~ comment_eol }
-togaki      =  { blank_line* ~ togaki_line }
-
-// セリフ
-serif1 = _{ id ~ SPACES ~ talk ~ comment_eol }
-serif2 = _{ SPACES ~ talk ~ comment_eol }
-serif  =  { blank_line* ~ serif1 ~ (!jump ~ serif2)* }
-
-// トーク
-talk         =  { (escape_talk | command_talk | normal_talk)+ }
-normal_talk  = @{ (!(COMMENT_CHAR | EOL) ~ ANY)+ }
-escape_talk  = _{ AT ~ escape_char }
-escape_char  = @{ AT | COMMENT_CHAR }
-command_talk =  { AT ~ id ~ SPACES? }
-
-// ジャンプ
-JUMP_MARK   = _{ ">" | "＞" }
-JUMP_LOCAL  = _{ JUMP_MARK }
-JUMP_GLOBAL = _{ PUSH(JUMP_MARK) ~ POP }
-
-jump_id     = _{ id ~ (AT ~ id)* }
-jump_args   = _{ jump_id ~ comment_eol }
-jump_local  =  { JUMP_LOCAL ~ jump_args }
-jump_global =  { JUMP_GLOBAL ~ jump_args }
-jump        = _{ blank_line* ~ SPACES ~ (jump_global | jump_local) }
+hashira      =  { blank_lines? ~ hashira_head ~ hashira_next+ }
+hashira_head =  { HASHIRA ~ id_attr? ~ COMMENT_EOL }
+hashira_next = _{ cut | jump | togaki | serif }
 
 // カット（チェイントーク区切り）
 CUT_MARK = _{ "-" | "－" | "ー" }
 CUT      = _{ PUSH(CUT_MARK) ~ PEEK{2} ~ POP }
-cut      =  { blank_line* ~ CUT ~ comment_eol }
+cut      =  { blank_lines? ~ CUT ~ COMMENT_EOL }
+
+
+//　＃＃ 行冒頭がスペースで始まるアイテム　＃＃
+
+// 役者、役者表情
+actor       = @{ id }
+emote       = @{ id }
+actor_emote =  { actor ~ AT ~ emote}
+
+// ト書き（スペース始まり）
+TOGAKI_MARK = _{ SCENE_MARK }
+TOGAKI      = _{ TOGAKI_MARK }
+
+togaki_attr =  { ( actor_emote ~ (SPACES ~ actor_emote)* ) | emote }
+togaki_head = _{ SPACES ~ TOGAKI ~ togaki_attr ~ COMMENT_EOL }
+togaki      =  { blank_lines? ~ togaki_head }
+
+// ジャンプ（スペース始まり）
+JUMP_MARK   = _{ ">" | "＞" }
+JUMP_LOCAL  = _{ JUMP_MARK }
+JUMP_GLOBAL = _{ PUSH(JUMP_MARK) ~ POP }
+
+jump_local  =  { JUMP_LOCAL  ~ id ~ COMMENT_EOL }
+jump_global =  { JUMP_GLOBAL ~ id ~ (AT ~ id)* ~ COMMENT_EOL }
+jump        = _{ blank_lines? ~ SPACES ~ (jump_global | jump_local) }
+
+// セリフ（２行目以降はスペース始まり、かつジャンプでもト書きでもない）
+serif1 = _{ actor ~ SPACES ~ talk ~ COMMENT_EOL }
+serif2 = _{ SPACES ~ talk ~ COMMENT_EOL }
+serif  =  { blank_lines? ~ serif1 ~ (!( jump | togaki ) ~ serif2)* }
+
+// トーク
+talk         =  { (escape_talk | command_talk | normal_talk)+ }
+normal_talk  = @{ ( !( COMMENT_CHAR | AT | EOL ) ~ ANY )+ }
+escape_talk  = _{ AT ~ escape_char }
+escape_char  = @{ AT | COMMENT_CHAR }
+command_talk =  { AT ~ id ~ SPACES? }
+
