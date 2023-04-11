@@ -1,6 +1,29 @@
 use pasta_parser_pest::*;
 
 #[test]
+fn serif() {
+    let rule = Rule::serif;
+    let input = "　\n\n役者　セリフ１セリフ１\n\n　　セリフ２セリフ２";
+    {
+        let pairs = PastaParser::parse(rule, input).unwrap_or_else(|e| panic!("{}", e));
+        println!("pairs:\n{}\n", pairs);
+    }
+    parses_to! {
+        parser: PastaParser,
+        input: input,
+        rule: Rule::serif,
+        tokens:[serif(0, 70, [
+            blank_lines(0, 5),
+            actor(5, 11),
+            talk(14, 38, [normal_talk(14, 38)]),
+            blank_lines(39, 40),
+            talk(46, 70, [normal_talk(46, 70)]),
+            EOI(70, 70)
+        ])]
+    };
+}
+
+#[test]
 fn togaki() {
     let rule = Rule::togaki;
     let input = "　\n\n　　：表情￥￥こめんと";

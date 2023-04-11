@@ -123,9 +123,9 @@ jump_global =  { JUMP_GLOBAL ~ id ~ (AT ~ id)* ~ COMMENT_EOL }
 jump        = _{ blank_lines? ~ SPACES ~ (jump_global | jump_local) }
 
 // セリフ（２行目以降はスペース始まり、かつジャンプでもト書きでもない）
-serif1 = _{ actor ~ SPACES ~ talk ~ COMMENT_EOL }
-serif2 = _{ SPACES ~ talk ~ COMMENT_EOL }
-serif  =  { blank_lines? ~ serif1 ~ (!( jump | togaki ) ~ serif2)* }
+serif1 = _{ blank_lines? ~ actor ~ SPACES ~ talk ~ COMMENT_EOL }
+serif2 = _{ blank_lines? ~ SPACES ~ talk ~ COMMENT_EOL }
+serif  =  { serif1 ~ (!( jump | togaki ) ~ serif2)* }
 
 // トーク
 talk         =  { (escape_talk | command_talk | normal_talk)+ }
