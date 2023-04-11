@@ -7,8 +7,19 @@
         {
             "type": "lldb",
             "request": "launch",
-            "name": "Debug",
-            "program": "${workspaceFolder}/<executable file>",
+            "name": "Debug unit tests in library 'pasta_parser_pest'",
+            "cargo": {
+                "args": [
+                    "test",
+                    "--no-run",
+                    "--lib",
+                    "--package=pasta_parser_pest"
+                ],
+                "filter": {
+                    "name": "pasta_parser_pest",
+                    "kind": "lib"
+                }
+            },
             "args": [],
             "cwd": "${workspaceFolder}"
         }
