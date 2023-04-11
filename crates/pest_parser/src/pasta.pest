@@ -2,41 +2,44 @@ pasta = _{ SOI ~ block* ~ EOI }
 block = _{ scene4 | scene3 | scene2 | scene1 }
 
 // EOL, SPACES
-EOL = _{ NEWLINE | EOI }
+EOL    = _{ NEWLINE | EOI }
+WS     = _{ !NEWLINE ~ WHITE_SPACE }
 SPACES = _{ WS+ }
-WS = _{ !NEWLINE ~ WHITE_SPACE }
+spaces = @{ SPACES }
 
 // comment
 COMMENT_CHAR = _{ "/" | "\\" | "￥" }
 COMMENT_MARK = _{ PUSH(COMMENT_CHAR) ~ POP }
-comment = @{ SPACES? ~ COMMENT_MARK ~ (!NEWLINE ~ ANY)* }
+COMMENT_HEAD = _{ SPACES? ~ COMMENT_MARK }
+comment_word = @{ (!NEWLINE ~ ANY)* }
+comment      =  { COMMENT_HEAD ~ comment_word }
 
 // blank_line （必ず１文字以上の要素を消費することを保証する）
 blank_line  = @{ blank_line1 | blank_line2 | blank_line3 }
 blank_line1 = @{ SPACES ~ comment? ~ EOL }
-blank_line2 = @{          comment  ~ EOL }
-blank_line3 = @{                     NEWLINE }
+blank_line2 = @{ comment ~ EOL }
+blank_line3 = @{ NEWLINE }
 
 // comment_line（コメントだけの行）
 comment_line = @{ comment ~ EOL }
 
 // comment_eol（コメントを含む行終端）
-comment_eol = _{ SPACES? ~ comment? ~ EOL }
+comment_eol  = _{ SPACES? ~ comment? ~ EOL }
 
 // expr
-NUM0 = @{ "0" | "０" }
-NUM1 = @{ "1" | "１" }
-NUM2 = @{ "2" | "２" }
-NUM3 = @{ "3" | "３" }
-NUM4 = @{ "4" | "４" }
-NUM5 = @{ "5" | "５" }
-NUM6 = @{ "6" | "６" }
-NUM7 = @{ "7" | "７" }
-NUM8 = @{ "8" | "８" }
-NUM9 = @{ "9" | "９" }
-non_zero_digit = _{        NUM1 | NUM2 | NUM3 | NUM4 | NUM5 | NUM6 | NUM7 | NUM8 | NUM9 }
+NUM0           = @{ "0" | "０" }
+NUM1           = @{ "1" | "１" }
+NUM2           = @{ "2" | "２" }
+NUM3           = @{ "3" | "３" }
+NUM4           = @{ "4" | "４" }
+NUM5           = @{ "5" | "５" }
+NUM6           = @{ "6" | "６" }
+NUM7           = @{ "7" | "７" }
+NUM8           = @{ "8" | "８" }
+NUM9           = @{ "9" | "９" }
+non_zero_digit = _{ NUM1 | NUM2 | NUM3 | NUM4 | NUM5 | NUM6 | NUM7 | NUM8 | NUM9 }
 digit          = _{ NUM0 | NUM1 | NUM2 | NUM3 | NUM4 | NUM5 | NUM6 | NUM7 | NUM8 | NUM9 }
-num            = { non_zero_digit ~ digit+ | digit }
+num            =  { non_zero_digit ~ digit+ | digit }
 
 LP   = _{ "(" | "（" }
 RP   = _{ ")" | "）" }
@@ -44,23 +47,23 @@ expr =  { term }
 term = _{ id | num }
 
 // id
-IDENTIFIER = _{ ( "_" | XID_START ) ~ XID_CONTINUE* }
+IDENTIFIER = _{ ("_" | XID_START) ~ XID_CONTINUE* }
 id         = @{ IDENTIFIER }
 
 // attr（属性）
-AT      = _{ "@" | "＠" }
-attrs   = { ( SPACES ~ attr )* }
-attr    = { id ~ AT ~ expr }
+AT    = _{ "@" | "＠" }
+attrs =  { (SPACES ~ attr)* }
+attr  =  { id ~ AT ~ expr }
 
 // id_attr（属性を含む識別子）
-id_attr =  { SPACES? ~ id ~ attrs }
+id_attr = { SPACES? ~ id ~ attrs }
 
 // シーン・タイトル
-SCENE_MARK = _{ ":" | "；" }
-SCENE1 = _{ PUSH(SCENE_MARK)           ~ POP }
-SCENE2 = _{ PUSH(SCENE_MARK) ~ PEEK{1} ~ POP }
-SCENE3 = _{ PUSH(SCENE_MARK) ~ PEEK{2} ~ POP }
-SCENE4 = _{ PUSH(SCENE_MARK) ~ PEEK{3} ~ POP }
+SCENE_MARK = _{ ":" | "：" }
+SCENE1     = _{ PUSH(SCENE_MARK) ~ POP }
+SCENE2     = _{ PUSH(SCENE_MARK) ~ PEEK{1} ~ POP }
+SCENE3     = _{ PUSH(SCENE_MARK) ~ PEEK{2} ~ POP }
+SCENE4     = _{ PUSH(SCENE_MARK) ~ PEEK{3} ~ POP }
 
 scene1_line = { SCENE1 ~ id_attr ~ comment_eol }
 scene2_line = { SCENE2 ~ id_attr ~ comment_eol }
@@ -79,27 +82,27 @@ scene1 = { blank_line* ~ scene1_line ~ hashira* }
 HASHIRA_MARK = _{ AT }
 HASHIRA      = _{ HASHIRA_MARK }
 
-hashira       =  { blank_line* ~ hashira_line ~ hashira_child* }
-hashira_line  =  { HASHIRA ~ id_attr ~ comment_eol }
-hashira_child = _{ togaki | jump | cut | serif }
+hashira      =  { blank_line* ~ hashira_head ~ hashira_next+ }
+hashira_head =  { HASHIRA ~ id_attr ~ comment_eol }
+hashira_next = _{ togaki | jump | cut | serif }
 
 // ト書き
 TOGAKI_MARK = _{ SCENE_MARK }
 TOGAKI      = _{ TOGAKI_MARK }
 
-togaki_attr =  { id | attr ~ ( SPACES ~ attr )* }
+togaki_attr =  { id | attr ~ (SPACES ~ attr)* }
 togaki_line = _{ SPACES ~ TOGAKI ~ togaki_attr ~ comment_eol }
 togaki      =  { blank_line* ~ togaki_line }
 
 // セリフ
 serif1 = _{ id ~ SPACES ~ talk ~ comment_eol }
-serif2 = _{      SPACES ~ talk ~ comment_eol }
-serif  =  { blank_line* ~ serif1 ~ ( !jump ~ serif2)* }
+serif2 = _{ SPACES ~ talk ~ comment_eol }
+serif  =  { blank_line* ~ serif1 ~ (!jump ~ serif2)* }
 
 // トーク
-talk = { ( escape_talk | command_talk | normal_talk )+ }
-normal_talk  = @{ ( !( COMMENT_CHAR | EOL ) ~ ANY )+ }
-escape_talk  = _{ AT ~ escape_char  }
+talk         =  { (escape_talk | command_talk | normal_talk)+ }
+normal_talk  = @{ (!(COMMENT_CHAR | EOL) ~ ANY)+ }
+escape_talk  = _{ AT ~ escape_char }
 escape_char  = @{ AT | COMMENT_CHAR }
 command_talk =  { AT ~ id ~ SPACES? }
 
@@ -108,11 +111,11 @@ JUMP_MARK   = _{ ">" | "＞" }
 JUMP_LOCAL  = _{ JUMP_MARK }
 JUMP_GLOBAL = _{ PUSH(JUMP_MARK) ~ POP }
 
-jump_id     = _{ id ~ ( AT ~ id )* }
+jump_id     = _{ id ~ (AT ~ id)* }
 jump_args   = _{ jump_id ~ comment_eol }
-jump_local  =  { JUMP_LOCAL  ~ jump_args }
+jump_local  =  { JUMP_LOCAL ~ jump_args }
 jump_global =  { JUMP_GLOBAL ~ jump_args }
-jump        = _{ blank_line* ~ SPACES ~ ( jump_global | jump_local ) }
+jump        = _{ blank_line* ~ SPACES ~ (jump_global | jump_local) }
 
 // カット（チェイントーク区切り）
 CUT_MARK = _{ "-" | "－" | "ー" }
