@@ -14,7 +14,7 @@ COMMENT_HEAD = _{ SPACES? ~ COMMENT_MARK }
 comment_word = @{ (!NEWLINE ~ ANY)* }
 comment      =  { COMMENT_HEAD ~ comment_word }
 
-// blank_line （必ず１文字以上の要素を消費することを保証する）
+// blank_line （必ず１文字以上の要素を消費することを保証すし、EOLにはマッチしない）
 blank_line  = @{ blank_line1 | blank_line2 | blank_line3 }
 blank_line1 = @{ SPACES ~ comment? ~ EOL }
 blank_line2 = @{ comment ~ EOL }
@@ -65,10 +65,11 @@ SCENE2     = _{ PUSH(SCENE_MARK) ~ PEEK{1} ~ POP }
 SCENE3     = _{ PUSH(SCENE_MARK) ~ PEEK{2} ~ POP }
 SCENE4     = _{ PUSH(SCENE_MARK) ~ PEEK{3} ~ POP }
 
-scene1_line = { SCENE1 ~ id_attr ~ comment_eol }
-scene2_line = { SCENE2 ~ id_attr ~ comment_eol }
-scene3_line = { SCENE3 ~ id_attr ~ comment_eol }
-scene4_line = { SCENE4 ~ id_attr ~ comment_eol }
+scene_head  =  { id_attr }
+scene1_line = _{ SCENE1 ~ scene_head ~ comment_eol }
+scene2_line = _{ SCENE2 ~ scene_head ~ comment_eol }
+scene3_line = _{ SCENE3 ~ scene_head ~ comment_eol }
+scene4_line = _{ SCENE4 ~ scene_head ~ comment_eol }
 
 // タイトルは、複数のタイトルコメント行 ~ タイトルヘッダ行 ~ 複数個の下位タイトルを含む
 scene4 = { blank_line* ~ scene4_line ~ scene3* }
@@ -87,7 +88,7 @@ hashira_head =  { HASHIRA ~ id_attr ~ comment_eol }
 hashira_next = _{ togaki | jump | cut | serif }
 
 // ト書き
-TOGAKI_MARK = _{ SCENE_MARK }
+TOGAKI_MARK = @{ SCENE_MARK }
 TOGAKI      = _{ TOGAKI_MARK }
 
 togaki_attr =  { id | attr ~ (SPACES ~ attr)* }

@@ -12,7 +12,7 @@ fn scene4_line() {
         parser: PastaParser,
         input: "：：：：：シーン４　属性１＠１０　￥￥こめんと",
         rule: Rule::scene4_line,
-        tokens: [scene4_line(0, 69, [id_attr(15, 48, [id(15, 27), attrs(27, 48, [attr(30, 48, [id(30, 39), expr(42, 48, [num(42, 48, [NUM1(42, 45), NUM0(45, 48)])])])])]), comment(51, 69, [comment_word(57, 69)]), EOI(69, 69)])]
+        tokens: [scene_head(15, 48, [id_attr(15, 48, [id(15, 27), attrs(27, 48, [attr(30, 48, [id(30, 39), expr(42, 48, [num(42, 48, [NUM1(42, 45), NUM0(45, 48)])])])])])]), comment(51, 69, [comment_word(57, 69)]), EOI(69, 69)]
     };
 }
 
@@ -28,7 +28,7 @@ fn scene1_line() {
         parser: PastaParser,
         input: "：：シーン１　属性１＠１０　￥￥こめんと",
         rule: Rule::scene1_line,
-        tokens: [scene1_line(0, 60, [id_attr(6, 39, [id(6, 18), attrs(18, 39, [attr(21, 39, [id(21, 30), expr(33, 39, [num(33, 39, [NUM1(33, 36), NUM0(36, 39)])])])])]), comment(42, 60, [comment_word(48, 60)]), EOI(60, 60)])]
+        tokens: [scene_head(6, 39, [id_attr(6, 39, [id(6, 18), attrs(18, 39, [attr(21, 39, [id(21, 30), expr(33, 39, [num(33, 39, [NUM1(33, 36), NUM0(36, 39)])])])])])]), comment(42, 60, [comment_word(48, 60)]), EOI(60, 60)]
     };
 }
 
