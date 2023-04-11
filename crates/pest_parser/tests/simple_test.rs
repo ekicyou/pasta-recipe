@@ -1,6 +1,27 @@
 use pasta_parser_pest::*;
 
 #[test]
+fn hashira_head() {
+    let rule = Rule::hashira_head;
+    let input = "＠柱　属性＠１￥￥こめんと";
+    {
+        let pairs = PastaParser::parse(rule, input).unwrap_or_else(|e| panic!("{}", e));
+        println!("pairs:\n{}\n", pairs);
+    }
+    parses_to! {
+        parser: PastaParser,
+        input: input,
+        rule: Rule::hashira_head,
+        tokens: [
+            hashira_head(0, 39, [
+                id_attr(3, 21, [id(3, 6), attrs(6, 21, [attr(9, 21, [id(9, 15), expr(18, 21, [num(18, 21, [NUM1(18, 21)])])])])]),
+                comment(21, 39, [comment_word(27, 39)]),
+                EOI(39, 39)
+            ])]
+    };
+}
+
+#[test]
 fn scene4_line() {
     let rule = Rule::scene4_line;
     let input = "：：：：：シーン４　属性１＠１０　￥￥こめんと";
