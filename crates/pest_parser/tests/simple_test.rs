@@ -241,25 +241,25 @@ fn blank_line() {
     {
         let input = "//comment";
         let pairs =
-            PastaParser::parse(Rule::blank_line2, input).unwrap_or_else(|e| panic!("{}", e));
+            PastaParser::parse(Rule::blank_line1, input).unwrap_or_else(|e| panic!("{}", e));
         println!("pairs:\n{}\n", pairs);
     }
     {
         let input = "￥￥こめんと";
         let pairs =
-            PastaParser::parse(Rule::blank_line2, input).unwrap_or_else(|e| panic!("{}", e));
+            PastaParser::parse(Rule::blank_line1, input).unwrap_or_else(|e| panic!("{}", e));
         println!("pairs:\n{}\n", pairs);
     }
     {
         let input = "\n";
         let pairs =
-            PastaParser::parse(Rule::blank_line3, input).unwrap_or_else(|e| panic!("{}", e));
+            PastaParser::parse(Rule::blank_line2, input).unwrap_or_else(|e| panic!("{}", e));
         println!("pairs:\n{}\n", pairs);
     }
     {
         let input = "\r\n";
         let pairs =
-            PastaParser::parse(Rule::blank_line3, input).unwrap_or_else(|e| panic!("{}", e));
+            PastaParser::parse(Rule::blank_line2, input).unwrap_or_else(|e| panic!("{}", e));
         println!("pairs:\n{}\n", pairs);
     }
 
