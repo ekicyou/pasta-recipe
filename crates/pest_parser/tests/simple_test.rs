@@ -3,7 +3,7 @@ use pasta_parser_pest::*;
 #[test]
 fn serif() {
     let rule = Rule::serif;
-    let input = "　\n\n役者　セリフ１セリフ１\n\n　　セリフ２セリフ２";
+    let input = "役者　セリフ１セリフ１\n\n　　セリフ２セリフ２";
     {
         let pairs = PastaParser::parse(rule, input).unwrap_or_else(|e| panic!("{}", e));
         println!("pairs:\n{}\n", pairs);
@@ -12,21 +12,26 @@ fn serif() {
         parser: PastaParser,
         input: input,
         rule: Rule::serif,
-        tokens:[serif(0, 70, [
-            blank_lines(0, 5),
-            actor(5, 11),
-            talk(14, 38, [normal_talk(14, 38)]),
-            blank_lines(39, 40),
-            talk(46, 70, [normal_talk(46, 70)]),
-            EOI(70, 70)
-        ])]
+        tokens:[
+            serif(0, 65, [
+                actor(0, 6),
+                talk(9, 33, [
+                    normal_talk(9, 33)
+                ]),
+                blank_lines(34, 35),
+                talk(41, 65, [
+                    normal_talk(41, 65)
+                ]),
+                EOI(65, 65)
+            ])
+        ]
     };
 }
 
 #[test]
 fn togaki() {
     let rule = Rule::togaki;
-    let input = "　\n\n　　：表情￥￥こめんと";
+    let input = "　　：表情￥￥こめんと";
     {
         let pairs = PastaParser::parse(rule, input).unwrap_or_else(|e| panic!("{}", e));
         println!("pairs:\n{}\n", pairs);
@@ -35,12 +40,15 @@ fn togaki() {
         parser: PastaParser,
         input: input,
         rule: Rule::togaki,
-        tokens: [togaki(0, 38, [
-            blank_lines(0, 5),
-            togaki_attr(14, 20, [emote(14, 20)]),
-            comment(20, 38, [comment_word(26, 38)]),
-            EOI(38, 38)]
-        )]
+        tokens: [
+            togaki(0, 33, [
+                togaki_attr(9, 15, [
+                    emote(9, 15)
+                ]),
+                comment(15, 33, [comment_word(21, 33)]),
+                EOI(33, 33)
+            ])
+        ]
     };
 }
 

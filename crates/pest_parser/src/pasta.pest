@@ -88,12 +88,12 @@ HASHIRA      = _{ HASHIRA_MARK }
 
 hashira      =  { blank_lines? ~ hashira_head ~ hashira_next+ }
 hashira_head =  { HASHIRA ~ id_attr? ~ COMMENT_EOL }
-hashira_next = _{ cut | jump | togaki | serif }
+hashira_next = _{ blank_lines? ~ (cut | jump | togaki | serif | elliptical) }
 
 // カット（チェイントーク区切り）
 CUT_MARK = _{ "-" | "－" | "ー" }
 CUT      = _{ PUSH(CUT_MARK) ~ PEEK{2} ~ POP }
-cut      =  { blank_lines? ~ CUT ~ COMMENT_EOL }
+cut      =  { CUT ~ COMMENT_EOL }
 
 // ＃＃ 行冒頭がスペースで始まるアイテム　＃＃
 
@@ -108,7 +108,7 @@ TOGAKI      = _{ TOGAKI_MARK }
 
 togaki_attr =  { (actor_emote ~ (SPACES ~ actor_emote)*) | emote }
 togaki_head = _{ SPACES ~ TOGAKI ~ togaki_attr ~ COMMENT_EOL }
-togaki      =  { blank_lines? ~ togaki_head }
+togaki      =  { togaki_head }
 
 // ジャンプ（スペース始まり）
 JUMP_MARK   = _{ ">" | "＞" }
@@ -117,10 +117,10 @@ JUMP_GLOBAL = _{ PUSH(JUMP_MARK) ~ POP }
 
 jump_local  =  { JUMP_LOCAL ~ id ~ COMMENT_EOL }
 jump_global =  { JUMP_GLOBAL ~ id ~ (AT ~ id)* ~ COMMENT_EOL }
-jump        = _{ blank_lines? ~ SPACES ~ (jump_global | jump_local) }
+jump        = _{ SPACES ~ (jump_global | jump_local) }
 
 // セリフ（２行目以降はスペース始まり、かつジャンプでもト書きでもない）
-serif1 = _{ blank_lines? ~ actor ~ SPACES ~ talk ~ COMMENT_EOL }
+serif1 = _{ actor ~ SPACES ~ talk ~ COMMENT_EOL }
 serif2 = _{ blank_lines? ~ SPACES ~ talk ~ COMMENT_EOL }
 serif  =  { serif1 ~ (!(jump | togaki) ~ serif2)* }
 
@@ -130,3 +130,7 @@ normal_talk  = @{ (!(COMMENT_CHAR | AT | EOL) ~ ANY)+ }
 escape_talk  = _{ AT ~ escape_char }
 escape_char  = @{ AT | COMMENT_CHAR }
 command_talk =  { AT ~ id ~ SPACES? }
+
+// 地の文
+elliptical      = _{ elliptical_line }
+elliptical_line =  { talk ~ COMMENT_EOL }
