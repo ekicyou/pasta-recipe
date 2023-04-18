@@ -7,5 +7,6 @@ fn talk() {
     {
         let pairs = PastaParser::parse(rule, input).unwrap_or_else(|e| panic!("{}", e));
         println!("pairs:\n{pairs}\n");
+        assert!(false);
     }
 }

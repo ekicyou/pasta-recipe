@@ -1,33 +1,38 @@
-pasta = _{ SOI ~ block* ~ EOI }
-block = _{ scene4 | scene3 | scene2 | scene1 }
+// ############################################################
+// root
+// ############################################################
+pasta       = _{ SOI ~ block* ~ EOI }
+pasta_lines = _{ SOI ~ line* ~ EOI }
 
+
+// ############################################################
 // EOL, SPACES
+// ############################################################
 EOL    = _{ NEWLINE | EOI }
 WS     = _{ !NEWLINE ~ WHITE_SPACE }
 SPACES = _{ WS+ }
-spaces = @{ SPACES }
 
+
+
+// ############################################################
 // comment
+// ############################################################
 COMMENT_CHAR = _{ "/" | "\\" | "￥" }
 COMMENT_MARK = _{ PUSH(COMMENT_CHAR) ~ POP }
 COMMENT_HEAD = _{ SPACES? ~ COMMENT_MARK }
 comment_word = @{ (!NEWLINE ~ ANY)* }
 comment      =  { COMMENT_HEAD ~ comment_word }
 
-// blank_line （必ず１文字以上の要素を消費することを保証し、EOLにはマッチしない）
-blank_line  = @{ blank_line1 | blank_line2 }
-blank_line1 = @{ (comment | SPACES) ~ EOL }
-blank_line2 = @{ NEWLINE }
-
-blank_lines = @{ blank_line+ }
-
-// comment_line（コメントだけの行）
-comment_line = @{ comment ~ EOL }
-
 // comment_eol（コメントを含む行終端）
 COMMENT_EOL = _{ SPACES? ~ comment? ~ EOL }
 
-// expr
+
+
+// ############################################################
+// expr / id
+// ############################################################
+
+// num, expr
 NUM0           = @{ "0" | "０" }
 NUM1           = @{ "1" | "１" }
 NUM2           = @{ "2" | "２" }
@@ -59,70 +64,10 @@ attr  =  { id ~ AT ~ expr }
 // id_attr（属性を含む識別子）
 id_attr = { SPACES? ~ id ~ attrs }
 
-// ＃＃ 行冒頭がスペース以外のアイテム　＃＃
-
-// シーン・タイトル
-SCENE_MARK = _{ ":" | "：" }
-SCENE1     = _{ PUSH(SCENE_MARK) ~ POP }
-SCENE2     = _{ PUSH(SCENE_MARK) ~ PEEK{1} ~ POP }
-SCENE3     = _{ PUSH(SCENE_MARK) ~ PEEK{2} ~ POP }
-SCENE4     = _{ PUSH(SCENE_MARK) ~ PEEK{3} ~ POP }
-
-scene_head  =  { id_attr }
-scene1_line = _{ SCENE1 ~ scene_head ~ COMMENT_EOL }
-scene2_line = _{ SCENE2 ~ scene_head ~ COMMENT_EOL }
-scene3_line = _{ SCENE3 ~ scene_head ~ COMMENT_EOL }
-scene4_line = _{ SCENE4 ~ scene_head ~ COMMENT_EOL }
-
-// タイトルは、複数のタイトルコメント行 ~ タイトルヘッダ行 ~ 複数個の下位タイトルを含む
-scene4 = { blank_lines? ~ scene4_line ~ scene3* }
-scene3 = { blank_lines? ~ scene3_line ~ scene2* }
-scene2 = { blank_lines? ~ scene2_line ~ scene1* }
-
-// シーンには、複数のシーンコメント行 ~ シーンヘッダ行 ~ 複数個の柱を含む
-scene1 = { blank_lines? ~ scene1_line ~ hashira* }
-
-// 柱
-HASHIRA_MARK = _{ AT }
-HASHIRA      = _{ HASHIRA_MARK }
-
-hashira      =  { blank_lines? ~ hashira_head ~ hashira_next+ }
-hashira_head =  { HASHIRA ~ id_attr? ~ COMMENT_EOL }
-hashira_next = _{ blank_lines? ~ (cut | jump | togaki | serif | elliptical) }
-
-// カット（チェイントーク区切り）
-CUT_MARK = _{ "-" | "－" | "ー" }
-CUT      = _{ PUSH(CUT_MARK) ~ PEEK{2} ~ POP }
-cut      =  { CUT ~ COMMENT_EOL }
-
-// ＃＃ 行冒頭がスペースで始まるアイテム　＃＃
-
 // 役者、役者表情
 actor       = @{ id }
 emote       = @{ id }
 actor_emote =  { actor ~ AT ~ emote }
-
-// ト書き（スペース始まり）
-TOGAKI_MARK = _{ SCENE_MARK }
-TOGAKI      = _{ TOGAKI_MARK }
-
-togaki_attr =  { (actor_emote ~ (SPACES ~ actor_emote)*) | emote }
-togaki_head = _{ SPACES ~ TOGAKI ~ togaki_attr ~ COMMENT_EOL }
-togaki      =  { togaki_head }
-
-// ジャンプ（スペース始まり）
-JUMP_MARK   = _{ ">" | "＞" }
-JUMP_LOCAL  = _{ JUMP_MARK }
-JUMP_GLOBAL = _{ PUSH(JUMP_MARK) ~ POP }
-
-jump_local  =  { JUMP_LOCAL ~ id ~ COMMENT_EOL }
-jump_global =  { JUMP_GLOBAL ~ id ~ (AT ~ id)* ~ COMMENT_EOL }
-jump        = _{ SPACES ~ (jump_global | jump_local) }
-
-// セリフ（２行目以降はスペース始まり、かつジャンプでもト書きでもない）
-serif1 = _{ actor ~ SPACES ~ talk ~ COMMENT_EOL }
-serif2 = _{ blank_lines? ~ SPACES ~ talk ~ COMMENT_EOL }
-serif  =  { serif1 ~ (!(jump | togaki) ~ serif2)* }
 
 // トーク
 talk         =  { (escape_talk | command_talk | normal_talk)+ }
@@ -131,6 +76,121 @@ escape_talk  = _{ AT ~ escape_char }
 escape_char  = @{ AT | COMMENT_CHAR }
 command_talk =  { AT ~ id ~ SPACES? }
 
+
+
+// ############################################################
+// line
+// ############################################################
+line = _{
+    // 空白以外で始まる行
+    comment_line |
+    scene4_line |
+    scene3_line |
+    scene2_line |
+    scene1_line |
+    hashira_line |
+    cut_line |
+    serif1_line |
+    elliptical_line |
+    // 空白で始まる行
+    jump_line |
+    togaki_line |
+    serif2_line |
+    blank_line |
+    // エラー
+    error_line
+  }
+error_line =  { (!(NEWLINE | EOI) ~ ANY)+ ~ EOL }
+
+// ============================================================
+// comment_line（コメントだけの行）
+comment_line = @{ comment ~ EOL }
+
+// ============================================================
+// blank_line （必ず１文字以上の要素を消費することを保証し、EOLにはマッチしない）
+blank_line  = @{ blank_line1 | blank_line2 }
+blank_line1 = @{ (comment | SPACES) ~ EOL }
+blank_line2 = @{ NEWLINE }
+
+// ============================================================
+// scene_line
+scene1_line = _{ SCENE1 ~ scene_head ~ COMMENT_EOL }
+scene2_line = _{ SCENE2 ~ scene_head ~ COMMENT_EOL }
+scene3_line = _{ SCENE3 ~ scene_head ~ COMMENT_EOL }
+scene4_line = _{ SCENE4 ~ scene_head ~ COMMENT_EOL }
+
+SCENE_MARK = _{ ":" | "：" }
+SCENE1     = _{ PUSH(SCENE_MARK) ~ POP }
+SCENE2     = _{ PUSH(SCENE_MARK) ~ PEEK{1} ~ POP }
+SCENE3     = _{ PUSH(SCENE_MARK) ~ PEEK{2} ~ POP }
+SCENE4     = _{ PUSH(SCENE_MARK) ~ PEEK{3} ~ POP }
+
+scene_head  =  { id_attr }
+
+// ============================================================
+// 柱
+hashira_line =  { HASHIRA ~ id_attr? ~ COMMENT_EOL }
+HASHIRA_MARK = _{ AT }
+HASHIRA      = _{ HASHIRA_MARK }
+
+// ============================================================
+// カット（チェイントーク区切り）
+cut_line =  { CUT ~ COMMENT_EOL }
+CUT_MARK = _{ "-" | "－" | "ー" }
+CUT      = _{ PUSH(CUT_MARK) ~ PEEK{2} ~ POP }
+
+// ============================================================
+// ジャンプ
+jump_line   = _{ SPACES ~ (jump_global | jump_local) ~ COMMENT_EOL }
+jump_local  =  { JUMP_LOCAL ~ id }
+jump_global =  { JUMP_GLOBAL ~ id ~ (AT ~ id)* }
+JUMP_MARK   = _{ ">" | "＞" }
+JUMP_LOCAL  = _{ JUMP_MARK }
+JUMP_GLOBAL = _{ PUSH(JUMP_MARK) ~ POP }
+
+// ============================================================
+// ト書き（スペース始まり）
+togaki_line = _{ SPACES ~ TOGAKI ~ togaki_attr ~ COMMENT_EOL }
+togaki_attr =  { (actor_emote ~ (SPACES ~ actor_emote)*) | emote }
+TOGAKI_MARK = _{ SCENE_MARK }
+TOGAKI      = _{ TOGAKI_MARK }
+
+// ============================================================
+// セリフ（２行目以降はスペース始まり、かつジャンプでもト書きでもない）
+serif1_line = _{ actor ~ SPACES ~ talk ~ COMMENT_EOL }
+serif2_line = _{ SPACES ~ talk ~ COMMENT_EOL }
+
+// ============================================================
 // 地の文
-elliptical      = _{ elliptical_line }
 elliptical_line =  { talk ~ COMMENT_EOL }
+
+
+// ############################################################
+// block
+// ############################################################
+block = _{ scene4 | scene3 | scene2 | scene1 }
+
+// ============================================================
+// ブランク行の列挙
+blank_lines = @{ blank_line+ }
+
+// ============================================================
+// タイトルは、複数のタイトルコメント行 ~ タイトルヘッダ行 ~ 複数個の下位タイトルを含む
+scene4 = { blank_lines? ~ scene4_line ~ scene3* }
+scene3 = { blank_lines? ~ scene3_line ~ scene2* }
+scene2 = { blank_lines? ~ scene2_line ~ scene1* }
+
+// ============================================================
+// シーンには、複数のシーンコメント行 ~ シーンヘッダ行 ~ 複数個の柱を含む
+scene1 = { blank_lines? ~ scene1_line ~ hashira* }
+
+// ============================================================
+// 柱
+hashira      =  { blank_lines? ~ hashira_line ~ hashira_next+ }
+hashira_next = _{ blank_lines? ~ (cut | jump | togaki | serif | elliptical) }
+
+cut        =  { cut_line }
+togaki     =  { togaki_line }
+jump       =  { jump_line }
+serif      =  { serif1_line ~ ( blank_lines? ~ !(jump | togaki) ~ serif2_line)* }
+elliptical =  { elliptical_line }
