@@ -68,7 +68,7 @@ actor_emote =  { actor ~ AT ~ emote }
 talk         =  { (escape_talk | command_talk | normal_talk)+ }
 normal_talk  = @{ (!(COMMENT_CHAR | AT | EOL) ~ ANY)+ }
 escape_talk  = _{ AT ~ escape_char }
-escape_char  = @{ AT | COMMENT_CHAR }
+escape_char  = @{ AT | COMMENT_CHAR | JUMP_MARK }
 command_talk =  { AT ~ id ~ SPACES? }
 
 // ############################################################
