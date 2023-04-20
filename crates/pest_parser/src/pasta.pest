@@ -4,15 +4,12 @@
 pasta       = _{ SOI ~ block* ~ EOI }
 pasta_lines = _{ SOI ~ line* ~ EOI }
 
-
 // ############################################################
 // EOL, SPACES
 // ############################################################
 EOL    = _{ NEWLINE | EOI }
 WS     = _{ !NEWLINE ~ WHITE_SPACE }
 SPACES = _{ WS+ }
-
-
 
 // ############################################################
 // comment
@@ -25,8 +22,6 @@ comment      =  { COMMENT_HEAD ~ comment_word }
 
 // comment_eol（コメントを含む行終端）
 COMMENT_EOL = _{ SPACES? ~ comment? ~ EOL }
-
-
 
 // ############################################################
 // expr / id
@@ -76,30 +71,25 @@ escape_talk  = _{ AT ~ escape_char }
 escape_char  = @{ AT | COMMENT_CHAR }
 command_talk =  { AT ~ id ~ SPACES? }
 
-
-
 // ############################################################
 // line
 // ############################################################
-line = _{
-    // 空白以外で始まる行
-    comment_line |
-    scene4_line |
-    scene3_line |
-    scene2_line |
-    scene1_line |
-    hashira_line |
-    cut_line |
-    serif1_line |
-    elliptical_line |
-    // 空白で始まる行
-    jump_line |
-    togaki_line |
-    serif2_line |
-    blank_line |
-    // エラー
-    error_line
-  }
+line       = _{
+    comment_line
+  | scene4_line
+  | scene3_line
+  | scene2_line
+  | scene1_line
+  | hashira_line
+  | cut_line
+  | serif1_line
+  | elliptical_line
+  | jump_line
+  | togaki_line
+  | serif2_line
+  | blank_line
+  | error_line
+}
 error_line =  { (!(NEWLINE | EOI) ~ ANY)+ ~ EOL }
 
 // ============================================================
@@ -125,7 +115,7 @@ SCENE2     = _{ PUSH(SCENE_MARK) ~ PEEK{1} ~ POP }
 SCENE3     = _{ PUSH(SCENE_MARK) ~ PEEK{2} ~ POP }
 SCENE4     = _{ PUSH(SCENE_MARK) ~ PEEK{3} ~ POP }
 
-scene_head  =  { id_attr }
+scene_head = { id_attr }
 
 // ============================================================
 // 柱
@@ -162,8 +152,7 @@ serif2_line = _{ SPACES ~ talk ~ COMMENT_EOL }
 
 // ============================================================
 // 地の文
-elliptical_line =  { talk ~ COMMENT_EOL }
-
+elliptical_line = { talk ~ COMMENT_EOL }
 
 // ############################################################
 // block
@@ -189,8 +178,8 @@ scene1 = { blank_lines? ~ scene1_line ~ hashira* }
 hashira      =  { blank_lines? ~ hashira_line ~ hashira_next+ }
 hashira_next = _{ blank_lines? ~ (cut | jump | togaki | serif | elliptical) }
 
-cut        =  { cut_line }
-togaki     =  { togaki_line }
-jump       =  { jump_line }
-serif      =  { serif1_line ~ ( blank_lines? ~ !(jump | togaki) ~ serif2_line)* }
-elliptical =  { elliptical_line }
+cut        = { cut_line }
+togaki     = { togaki_line }
+jump       = { jump_line }
+serif      = { serif1_line ~ (blank_lines? ~ !(jump | togaki) ~ serif2_line)* }
+elliptical = { elliptical_line }

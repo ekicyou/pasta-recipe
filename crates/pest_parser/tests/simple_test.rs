@@ -64,30 +64,13 @@ fn hashira() {
         parser: PastaParser,
         input: input,
         rule: Rule::hashira,
-        tokens:[hashira(0, 49, [
-            blank_lines(0, 5),
-            hashira_head(5, 45, [
-                id_attr(8, 26, [
-                    id(8, 11),
-                    attrs(11, 26, [
-                        attr(14, 26, [
-                            id(14, 20),
-                            expr(23, 26, [
-                                num(23, 26, [NUM1(23, 26)])
-                                ])
-                            ])
-                        ])
-                    ]),
-                    comment(26, 44, [comment_word(32, 44)])
-                ]),
-            cut(45, 49, [EOI(49, 49)])])
-        ]
+        tokens:[hashira(0, 49, [blank_lines(0, 5), hashira_line(5, 45, [id_attr(8, 26, [id(8, 11), attrs(11, 26, [attr(14, 26, [id(14, 20), expr(23, 26, [num(23, 26, [NUM1(23, 26)])])])])]), comment(26, 44, [comment_word(32, 44)])]), cut(45, 49, [cut_line(45, 49, [EOI(49, 49)])])])]
     };
 }
 
 #[test]
-fn hashira_head() {
-    let rule = Rule::hashira_head;
+fn hashira_line() {
+    let rule = Rule::hashira_line;
     let input = "＠柱　属性＠１￥￥こめんと";
     {
         let pairs = PastaParser::parse(rule, input).unwrap_or_else(|e| panic!("{}", e));
@@ -96,9 +79,9 @@ fn hashira_head() {
     parses_to! {
         parser: PastaParser,
         input: input,
-        rule: Rule::hashira_head,
+        rule: Rule::hashira_line,
         tokens: [
-            hashira_head(0, 39, [
+            hashira_line(0, 39, [
                 id_attr(3, 21, [id(3, 6), attrs(6, 21, [attr(9, 21, [id(9, 15), expr(18, 21, [num(18, 21, [NUM1(18, 21)])])])])]),
                 comment(21, 39, [comment_word(27, 39)]),
                 EOI(39, 39)
@@ -107,8 +90,8 @@ fn hashira_head() {
 }
 
 #[test]
-fn hashira_head2() {
-    let rule = Rule::hashira_head;
+fn hashira_line2() {
+    let rule = Rule::hashira_line;
     let input = "＠";
     {
         let pairs = PastaParser::parse(rule, input).unwrap_or_else(|e| panic!("{}", e));
@@ -117,8 +100,8 @@ fn hashira_head2() {
     parses_to! {
         parser: PastaParser,
         input: input,
-        rule: Rule::hashira_head,
-        tokens: [hashira_head(0, 3, [EOI(3, 3)])]
+        rule: Rule::hashira_line,
+        tokens: [hashira_line(0, 3, [EOI(3, 3)])]
     };
 }
 
