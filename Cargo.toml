@@ -6,9 +6,9 @@ members = [
 
 [workspace.dependencies]
 log = "0.4"
-logos = "0.12"
-anyhow = { version = "1", features = ["backtrace"] }
-thiserror = "1.0"
-regex = "1"
-lalrpop-util = "0.19.8"
-lalrpop = "0.19.8"
+logos = "0.13.0"
+anyhow = { version = "1.0.75", features = ["backtrace"] }
+thiserror = "1.0.50"
+regex ="1.10.2"
+lalrpop-util = "0.20.0"
+lalrpop = "0.20.0"

@@ -10,6 +10,6 @@ log.workspace = true
 anyhow.workspace = true
 thiserror.workspace = true
 regex.workspace = true
-pest = "2.5.7"
-pest_derive = "2.5.7"
+pest = "2.7.5"
+pest_derive = "2.7.5"
 

@@ -5,9 +5,8 @@ const WIDE_SPACE_LEN: usize = WIDE_SPACE_STR.len();
 
 #[derive(Logos, Debug, Clone, PartialEq)]
 pub enum Token<'a> {
-    #[error]
-    Error,
-
+    //#[error]
+    //Error,
     #[regex(r"(\r)?\n")]
     Newline,
 
@@ -107,67 +106,67 @@ mod tests {
             (token, range, text)
         });
         let x = iter.next().unwrap();
-        assert_eq!(x.0, Token::At);
+        assert_eq!(x.0, Ok(Token::At));
         let x = iter.next().unwrap();
-        assert_eq!(x.0, Token::VerticalLine);
+        assert_eq!(x.0, Ok(Token::VerticalLine));
         let x = iter.next().unwrap();
-        assert_eq!(x.0, Token::Text(&"識別子"));
+        assert_eq!(x.0, Ok(Token::Text(&"識別子")));
         let x = iter.next().unwrap();
-        assert_eq!(x.0, Token::LeftDoubleAngleBracket);
+        assert_eq!(x.0, Ok(Token::LeftDoubleAngleBracket));
         let x = iter.next().unwrap();
-        assert_eq!(x.0, Token::Text(&"しきべつし"));
+        assert_eq!(x.0, Ok(Token::Text(&"しきべつし")));
         let x = iter.next().unwrap();
-        assert_eq!(x.0, Token::RightDoubleAngleBracket);
+        assert_eq!(x.0, Ok(Token::RightDoubleAngleBracket));
         assert_eq!(iter.next(), None);
     }
 
     #[test]
     fn at_keyword() {
         let mut lexer = Token::lexer("＠｜識別子＠＠。《しきべつし》");
-        assert_eq!(lexer.next(), Some(Token::At));
-        assert_eq!(lexer.next(), Some(Token::VerticalLine));
-        assert_eq!(lexer.next(), Some(Token::Text(&"識別子")));
-        assert_eq!(lexer.next(), Some(Token::TextAt));
+        assert_eq!(lexer.next(), Some(Ok(Token::At)));
+        assert_eq!(lexer.next(), Some(Ok(Token::VerticalLine)));
+        assert_eq!(lexer.next(), Some(Ok(Token::Text(&"識別子"))));
+        assert_eq!(lexer.next(), Some(Ok(Token::TextAt)));
         assert_eq!(lexer.slice(), "＠＠");
-        assert_eq!(lexer.next(), Some(Token::Text(&"。")));
-        assert_eq!(lexer.next(), Some(Token::LeftDoubleAngleBracket));
-        assert_eq!(lexer.next(), Some(Token::Text(&"しきべつし")));
-        assert_eq!(lexer.next(), Some(Token::RightDoubleAngleBracket));
+        assert_eq!(lexer.next(), Some(Ok(Token::Text(&"。"))));
+        assert_eq!(lexer.next(), Some(Ok(Token::LeftDoubleAngleBracket)));
+        assert_eq!(lexer.next(), Some(Ok(Token::Text(&"しきべつし"))));
+        assert_eq!(lexer.next(), Some(Ok(Token::RightDoubleAngleBracket)));
         assert_eq!(lexer.next(), None);
     }
 
     #[test]
     fn at_vl() {
         let mut lexer = Token::lexer("＠ @ | ｜ ＠＠ @@ || ｜｜");
-        assert_eq!(lexer.next(), Some(Token::At));
+        assert_eq!(lexer.next(), Some(Ok(Token::At)));
         assert_eq!(lexer.span(), 0..3);
-        assert_eq!(lexer.next(), Some(Token::Spaces(1)));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
         assert_eq!(lexer.span(), 3..4);
-        assert_eq!(lexer.next(), Some(Token::At));
+        assert_eq!(lexer.next(), Some(Ok(Token::At)));
         assert_eq!(lexer.span(), 4..5);
-        assert_eq!(lexer.next(), Some(Token::Spaces(1)));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
         assert_eq!(lexer.span(), 5..6);
-        assert_eq!(lexer.next(), Some(Token::VerticalLine));
+        assert_eq!(lexer.next(), Some(Ok(Token::VerticalLine)));
         assert_eq!(lexer.span(), 6..7);
-        assert_eq!(lexer.next(), Some(Token::Spaces(1)));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
         assert_eq!(lexer.span(), 7..8);
-        assert_eq!(lexer.next(), Some(Token::VerticalLine));
+        assert_eq!(lexer.next(), Some(Ok(Token::VerticalLine)));
         assert_eq!(lexer.span(), 8..11);
-        assert_eq!(lexer.next(), Some(Token::Spaces(1)));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
         assert_eq!(lexer.span(), 11..12);
-        assert_eq!(lexer.next(), Some(Token::TextAt));
+        assert_eq!(lexer.next(), Some(Ok(Token::TextAt)));
         assert_eq!(lexer.span(), 12..18);
-        assert_eq!(lexer.next(), Some(Token::Spaces(1)));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
         assert_eq!(lexer.span(), 18..19);
-        assert_eq!(lexer.next(), Some(Token::TextAt));
+        assert_eq!(lexer.next(), Some(Ok(Token::TextAt)));
         assert_eq!(lexer.span(), 19..21);
-        assert_eq!(lexer.next(), Some(Token::Spaces(1)));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
         assert_eq!(lexer.span(), 21..22);
-        assert_eq!(lexer.next(), Some(Token::TextVerticalLine));
+        assert_eq!(lexer.next(), Some(Ok(Token::TextVerticalLine)));
         assert_eq!(lexer.span(), 22..24);
-        assert_eq!(lexer.next(), Some(Token::Spaces(1)));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
         assert_eq!(lexer.span(), 24..25);
-        assert_eq!(lexer.next(), Some(Token::TextVerticalLine));
+        assert_eq!(lexer.next(), Some(Ok(Token::TextVerticalLine)));
         assert_eq!(lexer.span(), 25..31);
         assert_eq!(lexer.next(), None);
     }
@@ -175,13 +174,13 @@ mod tests {
     #[test]
     fn spaces() {
         let mut lexer = Token::lexer("  　　　 \t\t");
-        assert_eq!(lexer.next(), Some(Token::Spaces(2)));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(2))));
         assert_eq!(lexer.span(), 0..2);
-        assert_eq!(lexer.next(), Some(Token::WideSpaces(3)));
+        assert_eq!(lexer.next(), Some(Ok(Token::WideSpaces(3))));
         assert_eq!(lexer.span(), 2..11);
-        assert_eq!(lexer.next(), Some(Token::Spaces(1)));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
         assert_eq!(lexer.span(), 11..12);
-        assert_eq!(lexer.next(), Some(Token::Tabs(2)));
+        assert_eq!(lexer.next(), Some(Ok(Token::Tabs(2))));
         assert_eq!(lexer.span(), 12..14);
         assert_eq!(lexer.next(), None);
     }
@@ -189,11 +188,11 @@ mod tests {
     #[test]
     fn new_line() {
         let mut lexer = Token::lexer("\r\n\n\n");
-        assert_eq!(lexer.next(), Some(Token::Newline));
+        assert_eq!(lexer.next(), Some(Ok(Token::Newline)));
         assert_eq!(lexer.span(), 0..2);
-        assert_eq!(lexer.next(), Some(Token::Newline));
+        assert_eq!(lexer.next(), Some(Ok(Token::Newline)));
         assert_eq!(lexer.span(), 2..3);
-        assert_eq!(lexer.next(), Some(Token::Newline));
+        assert_eq!(lexer.next(), Some(Ok(Token::Newline)));
         assert_eq!(lexer.span(), 3..4);
         assert_eq!(lexer.next(), None);
     }
