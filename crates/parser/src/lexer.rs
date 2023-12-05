@@ -31,7 +31,7 @@ pub enum Token<'a> {
 
     #[token(":")]
     #[token("：")]
-    Colon,
+    Colon1,
 
     #[token("::")]
     #[token("：：")]
@@ -68,27 +68,25 @@ pub enum Token<'a> {
     #[token("％％")]
     TextPercent,
 
-    #[token("《")]
-    LeftDoubleAngleBracket,
-
     #[token("＠《")]
     TextLeftDoubleAngleBracket,
 
-    #[token("》")]
-    RightDoubleAngleBracket,
+    #[token("《")]
+    LeftDoubleAngleBracket,
 
     #[token("＠》")]
     TextRightDoubleAngleBracket,
 
-    /*
+    #[token("》")]
+    RightDoubleAngleBracket,
+
     #[regex(r"[\p{Lu}|\p{Ll}|\p{Lt}|\p{Lm}|\p{Lo}|\p{Nl}][\p{Lu}|\p{Ll}|\p{Lt}|\p{Lm}|\p{Lo}|\p{Nl}|\p{Mn}|\p{Mc}|\p{Pc}|\p{Nd}|\p{Cf}]+")]
-    TextIdentifier,
+    Identifier(&'a str),
 
     #[regex(r"[^ \t\u3000@＠\|｜《》\r\n\p{Lu}|\p{Ll}|\p{Lt}|\p{Lm}|\p{Lo}|\p{Nl}]+")]
-    TextOthers,
-     */
-    #[regex(r"[^\r\n \t\u{3000}@＠\|｜:：%％/《》]+")]
-    Text(&'a str),
+    TextOthers(&'a str),
+    //#[regex(r"[^\r\n \t\u{3000}@＠\|｜:：%％/《》]+")]
+    //Text(&'a str),
 }
 
 #[cfg(test)]
@@ -110,11 +108,11 @@ mod tests {
         let x = iter.next().unwrap();
         assert_eq!(x.0, Ok(Token::VerticalLine));
         let x = iter.next().unwrap();
-        assert_eq!(x.0, Ok(Token::Text(&"識別子")));
+        assert_eq!(x.0, Ok(Token::Identifier(&"識別子")));
         let x = iter.next().unwrap();
         assert_eq!(x.0, Ok(Token::LeftDoubleAngleBracket));
         let x = iter.next().unwrap();
-        assert_eq!(x.0, Ok(Token::Text(&"しきべつし")));
+        assert_eq!(x.0, Ok(Token::Identifier(&"しきべつし")));
         let x = iter.next().unwrap();
         assert_eq!(x.0, Ok(Token::RightDoubleAngleBracket));
         assert_eq!(iter.next(), None);
@@ -125,12 +123,12 @@ mod tests {
         let mut lexer = Token::lexer("＠｜識別子＠＠。《しきべつし》");
         assert_eq!(lexer.next(), Some(Ok(Token::At)));
         assert_eq!(lexer.next(), Some(Ok(Token::VerticalLine)));
-        assert_eq!(lexer.next(), Some(Ok(Token::Text(&"識別子"))));
+        assert_eq!(lexer.next(), Some(Ok(Token::Identifier(&"識別子"))));
         assert_eq!(lexer.next(), Some(Ok(Token::TextAt)));
         assert_eq!(lexer.slice(), "＠＠");
-        assert_eq!(lexer.next(), Some(Ok(Token::Text(&"。"))));
+        assert_eq!(lexer.next(), Some(Ok(Token::TextOthers(&"。"))));
         assert_eq!(lexer.next(), Some(Ok(Token::LeftDoubleAngleBracket)));
-        assert_eq!(lexer.next(), Some(Ok(Token::Text(&"しきべつし"))));
+        assert_eq!(lexer.next(), Some(Ok(Token::Identifier(&"しきべつし"))));
         assert_eq!(lexer.next(), Some(Ok(Token::RightDoubleAngleBracket)));
         assert_eq!(lexer.next(), None);
     }
