@@ -1,34 +1,7 @@
 use logos::Logos;
 
-const WIDE_SPACE_STR: &str = "\u{3000}";
-const WIDE_SPACE_LEN: usize = WIDE_SPACE_STR.len();
-
 #[derive(Logos, Debug, Clone, PartialEq, Hash)]
 pub enum Token<'a> {
-    //#[error]
-    //Error,
-    #[regex(r"(\r)?\n")]
-    Newline,
-
-    #[regex(r"//[^\r\n]*")]
-    LineComment(&'a str),
-
-    #[token("@/")]
-    TextSlash,
-
-    #[regex(r" +", |lex| (lex.span().len() as u32))]
-    Spaces(u32),
-
-    #[regex(r"\u{3000}+", |lex| ((lex.span().len() / WIDE_SPACE_LEN) as u32))]
-    WideSpaces(u32),
-
-    #[regex(r"\t+", |lex| lex.span().len() as u32)]
-    Tabs(u32),
-
-    #[token("@:")]
-    #[token("＠：")]
-    TextColon,
-
     #[token(":")]
     #[token("：")]
     Colon1,
