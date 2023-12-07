@@ -6,14 +6,6 @@ pub enum Token<'a> {
     #[token("：")]
     Colon1,
 
-    #[token("::")]
-    #[token("：：")]
-    Colon2,
-
-    #[token(":::")]
-    #[token("：：：")]
-    Colon3,
-
     #[token("::::")]
     #[token("：：：：")]
     Colon4,
