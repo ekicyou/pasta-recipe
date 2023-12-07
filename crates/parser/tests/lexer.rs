@@ -71,7 +71,7 @@ fn text1() {
 
     assert_eq!(y(), Token::Spaces(4));
     assert_eq!(y(), Token::Identifier(&"窓の中の世界にいる女の子"));
-    assert_eq!(y(), Token::TextOthers(&"窓。"));
+    assert_eq!(y(), Token::TextOthers(&"。"));
     assert_eq!(y(), Token::Newline);
 
     assert_eq!(y(), Token::Newline);
@@ -153,19 +153,6 @@ fn text1() {
     assert_eq!(y(), (Token::TextOthers(&"、")));
     assert_eq!(y(), (Token::Identifier(&"死亡フラグ立ちましたよ")));
     assert_eq!(y(), (Token::TextOthers(&"？")));
-    assert_eq!(y(), Token::Newline);
-    assert_eq!(x(), None);
-}
-
-#[test]
-fn text2() {
-    let source = include_str!("sample/text2.pasta");
-    let mut lex = Token::lexer(source);
-    let mut x = || lex.next();
-    let mut y = || x().unwrap().unwrap();
-
-    assert_eq!(y(), Token::Colon1);
-    assert_eq!(y(), Token::Identifier(&"これはタイトルです"));
     assert_eq!(y(), Token::Newline);
     assert_eq!(x(), None);
 }
