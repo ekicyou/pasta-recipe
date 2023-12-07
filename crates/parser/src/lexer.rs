@@ -94,6 +94,50 @@ mod tests {
     use super::*;
 
     #[test]
+    fn colon1() {
+        let source = "：";
+        let mut lex = Token::lexer(source);
+        let mut x = || lex.next();
+        let mut y = || x().unwrap().unwrap();
+
+        assert_eq!(y(), Token::Colon1);
+        assert_eq!(x(), None);
+    }
+
+    #[test]
+    fn colon2() {
+        let source = "：：";
+        let mut lex = Token::lexer(source);
+        let mut x = || lex.next();
+        let mut y = || x().unwrap().unwrap();
+
+        assert_eq!(y(), Token::Colon2);
+        assert_eq!(x(), None);
+    }
+
+    #[test]
+    fn colon3() {
+        let source = "：：：";
+        let mut lex = Token::lexer(source);
+        let mut x = || lex.next();
+        let mut y = || x().unwrap().unwrap();
+
+        assert_eq!(y(), Token::Colon3);
+        assert_eq!(x(), None);
+    }
+
+    #[test]
+    fn colon4() {
+        let source = "：：：：";
+        let mut lex = Token::lexer(source);
+        let mut x = || lex.next();
+        let mut y = || x().unwrap().unwrap();
+
+        assert_eq!(y(), Token::Colon4);
+        assert_eq!(x(), None);
+    }
+
+    #[test]
     fn at_keyword2() {
         let lexer = Token::lexer("＠｜識別子《しきべつし》");
         let source = lexer.source();
