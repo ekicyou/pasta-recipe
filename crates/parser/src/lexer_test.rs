@@ -22,7 +22,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn colon4() {
+    fn colon4_1() {
         let source = "：：：：";
         let mut lex = Token::lexer(source);
         let mut x = || lex.next();
@@ -34,6 +34,18 @@ mod tests {
 
     #[test]
     fn colon4_2() {
+        let source = "：：：：xyz";
+        let mut lex = Token::lexer(source);
+        let mut x = || lex.next();
+        let mut y = || x().unwrap().unwrap();
+
+        assert_eq!(y(), Token::Colon4);
+        assert_eq!(y(), Token::Identifier(&"xyz"));
+        assert_eq!(x(), None);
+    }
+
+    #[test]
+    fn colon4_3() {
         let source = "：：：：これ";
         let mut lex = Token::lexer(source);
         let mut x = || lex.next();
