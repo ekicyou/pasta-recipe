@@ -85,8 +85,6 @@ pub enum Token<'a> {
 
     #[regex(r"[^ \t\u3000@＠\|｜《》\r\n\p{XID_Start}]+")]
     TextOthers(&'a str),
-    //#[regex(r"[^\r\n \t\u{3000}@＠\|｜:：%％/《》]+")]
-    //Text(&'a str),
 }
 
 #[cfg(test)]
