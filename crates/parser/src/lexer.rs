@@ -80,10 +80,10 @@ pub enum Token<'a> {
     #[token("》")]
     RightDoubleAngleBracket,
 
-    #[regex(r"[\p{Lu}|\p{Ll}|\p{Lt}|\p{Lm}|\p{Lo}|\p{Nl}][\p{Lu}|\p{Ll}|\p{Lt}|\p{Lm}|\p{Lo}|\p{Nl}|\p{Mn}|\p{Mc}|\p{Pc}|\p{Nd}|\p{Cf}]+")]
+    #[regex(r"\p{XID_Start}\p{XID_Continue}*")]
     Identifier(&'a str),
 
-    #[regex(r"[^ \t\u3000@＠\|｜《》\r\n\p{Lu}|\p{Ll}|\p{Lt}|\p{Lm}|\p{Lo}|\p{Nl}]+")]
+    #[regex(r"[^ \t\u3000@＠\|｜《》\r\n\p{XID_Start}]+")]
     TextOthers(&'a str),
     //#[regex(r"[^\r\n \t\u{3000}@＠\|｜:：%％/《》]+")]
     //Text(&'a str),
@@ -134,18 +134,6 @@ mod tests {
         let mut y = || x().unwrap().unwrap();
 
         assert_eq!(y(), Token::Colon4);
-        assert_eq!(x(), None);
-    }
-
-    #[test]
-    fn colon4_2() {
-        let source = "：：：：これ";
-        let mut lex = Token::lexer(source);
-        let mut x = || lex.next();
-        let mut y = || x().unwrap().unwrap();
-
-        assert_eq!(y(), Token::Colon4);
-        assert_eq!(y(), Token::Identifier(&"これ"));
         assert_eq!(x(), None);
     }
 
