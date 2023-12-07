@@ -45,41 +45,6 @@ pub enum Token<'a> {
     #[token("：：：：")]
     Colon4,
 
-    #[token("@")]
-    #[token("＠")]
-    At,
-
-    #[token("@@")]
-    #[token("＠＠")]
-    TextAt,
-
-    #[token("|")]
-    #[token("｜")]
-    VerticalLine,
-
-    #[token("||")]
-    #[token("｜｜")]
-    TextVerticalLine,
-
-    #[regex(r"[%％][^\r\n%％]+[%％]?")]
-    Expr(&'a str),
-
-    #[token("%%")]
-    #[token("％％")]
-    TextPercent,
-
-    #[token("＠《")]
-    TextLeftDoubleAngleBracket,
-
-    #[token("《")]
-    LeftDoubleAngleBracket,
-
-    #[token("＠》")]
-    TextRightDoubleAngleBracket,
-
-    #[token("》")]
-    RightDoubleAngleBracket,
-
     #[regex(r"\p{XID_Start}\p{XID_Continue}*")]
     Identifier(&'a str),
 
