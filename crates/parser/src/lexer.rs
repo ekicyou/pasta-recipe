@@ -83,7 +83,7 @@ pub enum Token<'a> {
     #[regex(r"\p{XID_Start}\p{XID_Continue}*")]
     Identifier(&'a str),
 
-    #[regex(r"[^ \t\u3000@＠\|｜《》\r\n\p{XID_Start}]+")]
+    #[regex(r"[^ \t\u3000@＠:：\|｜《》\r\n\p{XID_Start}]+")]
     TextOthers(&'a str),
     //#[regex(r"[^\r\n \t\u{3000}@＠\|｜:：%％/《》]+")]
     //Text(&'a str),
