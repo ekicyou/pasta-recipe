@@ -3,7 +3,7 @@ use logos::Logos;
 const WIDE_SPACE_STR: &str = "\u{3000}";
 const WIDE_SPACE_LEN: usize = WIDE_SPACE_STR.len();
 
-#[derive(Logos, Debug, Clone, PartialEq)]
+#[derive(Logos, Debug, Clone, PartialEq, Hash)]
 pub enum Token<'a> {
     //#[error]
     //Error,
@@ -134,6 +134,18 @@ mod tests {
         let mut y = || x().unwrap().unwrap();
 
         assert_eq!(y(), Token::Colon4);
+        assert_eq!(x(), None);
+    }
+
+    #[test]
+    fn colon4_2() {
+        let source = "：：：：これ";
+        let mut lex = Token::lexer(source);
+        let mut x = || lex.next();
+        let mut y = || x().unwrap().unwrap();
+
+        assert_eq!(y(), Token::Colon4);
+        assert_eq!(y(), Token::Identifier(&"これ"));
         assert_eq!(x(), None);
     }
 

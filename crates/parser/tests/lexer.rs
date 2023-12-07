@@ -159,8 +159,7 @@ fn text1() {
 
 #[test]
 fn text2() {
-    const TEXT: &str = include_str!("sample/text2.pasta");
-    let source = TEXT;
+    let source = include_str!("sample/text2.pasta");
     let mut lex = Token::lexer(source);
     let mut x = || lex.next();
     let mut y = || x().unwrap().unwrap();
