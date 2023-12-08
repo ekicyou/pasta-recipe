@@ -1,8 +1,5 @@
 use logos::Logos;
 
-const WIDE_SPACE_STR: &str = "\u{3000}";
-const WIDE_SPACE_LEN: usize = WIDE_SPACE_STR.len();
-
 #[derive(Logos, Debug, Clone, PartialEq, Hash)]
 pub enum Token<'a> {
     //#[error]
@@ -16,14 +13,14 @@ pub enum Token<'a> {
     #[token("@/")]
     TextSlash,
 
-    #[regex(r" +", |lex| (lex.span().len() as u32))]
-    Spaces(u32),
+    #[regex(r" +")]
+    Spaces(&'a str),
 
-    #[regex(r"\u{3000}+", |lex| ((lex.span().len() / WIDE_SPACE_LEN) as u32))]
-    WideSpaces(u32),
+    #[regex(r"\u{3000}+")]
+    WideSpaces(&'a str),
 
-    #[regex(r"\t+", |lex| lex.span().len() as u32)]
-    Tabs(u32),
+    #[regex(r"\t+")]
+    Tabs(&'a str),
 
     #[token("@:")]
     #[token("＠：")]
@@ -80,10 +77,10 @@ pub enum Token<'a> {
     #[token("》")]
     RightDoubleAngleBracket,
 
-    #[regex(r"\p{XID_Start}\p{XID_Continue}*")]
+    #[regex(r"[_\p{XID_Start}]\p{XID_Continue}*")]
     Identifier(&'a str),
 
-    #[regex(r"[^ \t\u3000@＠:：%％\|｜《》\r\n\p{XID_Start}]+")]
+    #[regex(r"[^ \t\u3000@＠:：%％\|｜《》\r\n_\p{XID_Start}]+")]
     TextOthers(&'a str),
     //#[regex(r"[^\r\n \t\u{3000}@＠\|｜:：%％/《》]+")]
     //Text(&'a str),
@@ -182,31 +179,31 @@ mod tests {
         let mut lexer = Token::lexer("＠ @ | ｜ ＠＠ @@ || ｜｜");
         assert_eq!(lexer.next(), Some(Ok(Token::At)));
         assert_eq!(lexer.span(), 0..3);
-        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(&" "))));
         assert_eq!(lexer.span(), 3..4);
         assert_eq!(lexer.next(), Some(Ok(Token::At)));
         assert_eq!(lexer.span(), 4..5);
-        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(&" "))));
         assert_eq!(lexer.span(), 5..6);
         assert_eq!(lexer.next(), Some(Ok(Token::VerticalLine)));
         assert_eq!(lexer.span(), 6..7);
-        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(&" "))));
         assert_eq!(lexer.span(), 7..8);
         assert_eq!(lexer.next(), Some(Ok(Token::VerticalLine)));
         assert_eq!(lexer.span(), 8..11);
-        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(&" "))));
         assert_eq!(lexer.span(), 11..12);
         assert_eq!(lexer.next(), Some(Ok(Token::TextAt)));
         assert_eq!(lexer.span(), 12..18);
-        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(&" "))));
         assert_eq!(lexer.span(), 18..19);
         assert_eq!(lexer.next(), Some(Ok(Token::TextAt)));
         assert_eq!(lexer.span(), 19..21);
-        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(&" "))));
         assert_eq!(lexer.span(), 21..22);
         assert_eq!(lexer.next(), Some(Ok(Token::TextVerticalLine)));
         assert_eq!(lexer.span(), 22..24);
-        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(&" "))));
         assert_eq!(lexer.span(), 24..25);
         assert_eq!(lexer.next(), Some(Ok(Token::TextVerticalLine)));
         assert_eq!(lexer.span(), 25..31);
@@ -216,13 +213,13 @@ mod tests {
     #[test]
     fn spaces() {
         let mut lexer = Token::lexer("  　　　 \t\t");
-        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(2))));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(&"  "))));
         assert_eq!(lexer.span(), 0..2);
-        assert_eq!(lexer.next(), Some(Ok(Token::WideSpaces(3))));
+        assert_eq!(lexer.next(), Some(Ok(Token::WideSpaces(&"　　　"))));
         assert_eq!(lexer.span(), 2..11);
-        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(1))));
+        assert_eq!(lexer.next(), Some(Ok(Token::Spaces(&" "))));
         assert_eq!(lexer.span(), 11..12);
-        assert_eq!(lexer.next(), Some(Ok(Token::Tabs(2))));
+        assert_eq!(lexer.next(), Some(Ok(Token::Tabs(&"\t\t"))));
         assert_eq!(lexer.span(), 12..14);
         assert_eq!(lexer.next(), None);
     }
