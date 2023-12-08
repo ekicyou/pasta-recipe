@@ -77,7 +77,8 @@ pub enum Token<'a> {
     #[token("》")]
     RightDoubleAngleBracket,
 
-    #[regex(r"[_\p{XID_Start}]\p{XID_Continue}*")]
+    #[regex(r"\p{XID_Start}\p{XID_Continue}*")]
+    #[regex(r"_\p{XID_Continue}+")]
     Identifier(&'a str),
 
     #[regex(r"[^ \t\u3000@＠:：%％\|｜《》\r\n_\p{XID_Start}]+")]
