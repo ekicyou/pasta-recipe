@@ -1,4 +1,5 @@
 use logos::Logos;
+use thiserror;
 
 #[derive(Logos, Debug, Clone, Copy, PartialEq, Hash)]
 #[logos(error = LexerError)]
@@ -79,8 +80,9 @@ pub enum Token<'a> {
     TextOthers(&'a str),
 }
 
-#[derive(Debug, Clone, Copy, PartialEq, Hash)]
+#[derive(thiserror::Error, Debug, Clone, Copy, PartialEq, Hash)]
 pub enum LexerError {
+    #[error("default")]
     Default,
 }
 
