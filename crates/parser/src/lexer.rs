@@ -131,21 +131,21 @@ mod tests {
         let lexer = Token::lexer("｜識別子《しきべつし》");
         let source = lexer.source();
         let mut iter = lexer.spanned().map(|a| {
-            let token = a.0;
+            let token = a.0.unwrap();
             let range = a.1;
             let text = unsafe { source.get_unchecked(range.clone()) };
             (token, range, text)
         });
         let x = iter.next().unwrap();
-        assert_eq!(x.0, Ok(Token::VerticalLine));
+        assert_eq!(x.0, Token::VerticalLine);
         let x = iter.next().unwrap();
-        assert_eq!(x.0, Ok(Token::Identifier(&"識別子")));
+        assert_eq!(x.0, Token::Identifier(&"識別子"));
         let x = iter.next().unwrap();
-        assert_eq!(x.0, Ok(Token::LeftDoubleAngleBracket));
+        assert_eq!(x.0, Token::LeftDoubleAngleBracket);
         let x = iter.next().unwrap();
-        assert_eq!(x.0, Ok(Token::Identifier(&"しきべつし")));
+        assert_eq!(x.0, Token::Identifier(&"しきべつし"));
         let x = iter.next().unwrap();
-        assert_eq!(x.0, Ok(Token::RightDoubleAngleBracket));
+        assert_eq!(x.0, Token::RightDoubleAngleBracket);
         assert_eq!(iter.next(), None);
     }
 
