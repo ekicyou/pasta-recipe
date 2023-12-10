@@ -128,7 +128,7 @@ fn text1() {
 
     assert_eq!(y(), Token::Colon1);
     assert_eq!(y(), Token::Identifier(&"会話"));
-    assert_eq!(y(), Token::Expr(&"％好感度 >= 100"));
+    assert_eq!(y(), Token::Expr(&"＃好感度 >= 100"));
     assert_eq!(y(), Token::Newline);
 
     assert_eq!(y(), Token::Identifier(&"おじさん"));
@@ -141,7 +141,7 @@ fn text1() {
     assert_eq!(y(), Token::Newline);
 
     assert_eq!(y(), Token::Spaces(&"            "));
-    assert_eq!(y(), Token::Expr(&"％死亡フラグ=true"));
+    assert_eq!(y(), Token::Expr(&"＃死亡フラグ=true"));
     assert_eq!(y(), Token::Newline);
 
     assert_eq!(y(), Token::Identifier(&"ぱすた"));

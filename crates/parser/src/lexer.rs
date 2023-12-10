@@ -1,6 +1,6 @@
 use logos::Logos;
 
-#[derive(Logos, Debug, Clone, PartialEq, Hash)]
+#[derive(Logos, Debug, Clone, Copy, PartialEq, Hash)]
 pub enum Token<'a> {
     //#[error]
     //Error,
@@ -10,9 +10,6 @@ pub enum Token<'a> {
     #[regex(r"//[^\r\n]*")]
     LineComment(&'a str),
 
-    #[token("@/")]
-    TextSlash,
-
     #[regex(r" +")]
     Spaces(&'a str),
 
@@ -21,10 +18,6 @@ pub enum Token<'a> {
 
     #[regex(r"\t+")]
     Tabs(&'a str),
-
-    #[token("@:")]
-    #[token("＠：")]
-    TextColon,
 
     #[token(":")]
     #[token("：")]
@@ -46,10 +39,6 @@ pub enum Token<'a> {
     #[token("＠")]
     At,
 
-    #[token("@@")]
-    #[token("＠＠")]
-    TextAt,
-
     #[token("|")]
     #[token("｜")]
     VerticalLine,
@@ -58,21 +47,11 @@ pub enum Token<'a> {
     #[token("｜｜")]
     TextVerticalLine,
 
-    #[regex(r"[%％][^\r\n%％]+[%％]?")]
+    #[regex(r"[#＃][^\r\n#＃]+[#＃]?")]
     Expr(&'a str),
-
-    #[token("%%")]
-    #[token("％％")]
-    TextPercent,
-
-    #[token("＠《")]
-    TextLeftDoubleAngleBracket,
 
     #[token("《")]
     LeftDoubleAngleBracket,
-
-    #[token("＠》")]
-    TextRightDoubleAngleBracket,
 
     #[token("》")]
     RightDoubleAngleBracket,
@@ -80,6 +59,20 @@ pub enum Token<'a> {
     #[regex(r"\p{XID_Start}\p{XID_Continue}*")]
     #[regex(r"_\p{XID_Continue}+")]
     Identifier(&'a str),
+
+    #[token("@@")]
+    #[token("@/")]
+    #[token("@:")]
+    #[token("@|")]
+    #[token("＠＠")]
+    #[token("＠／")]
+    #[token("＠：")]
+    #[token("＠｜")]
+    #[token("＠《")]
+    #[token("＠》")]
+    #[token("##")]
+    #[token("＃＃")]
+    TextEscape,
 
     #[regex(r"[^ \t\u3000@＠:：%％\|｜《》\r\n_\p{XID_Start}]+")]
     TextOthers(&'a str),
@@ -137,7 +130,7 @@ mod tests {
 
     #[test]
     fn at_keyword2() {
-        let lexer = Token::lexer("＠｜識別子《しきべつし》");
+        let lexer = Token::lexer("｜識別子《しきべつし》");
         let source = lexer.source();
         let mut iter = lexer.spanned().map(|a| {
             let token = a.0;
@@ -145,8 +138,6 @@ mod tests {
             let text = unsafe { source.get_unchecked(range.clone()) };
             (token, range, text)
         });
-        let x = iter.next().unwrap();
-        assert_eq!(x.0, Ok(Token::At));
         let x = iter.next().unwrap();
         assert_eq!(x.0, Ok(Token::VerticalLine));
         let x = iter.next().unwrap();
@@ -162,17 +153,17 @@ mod tests {
 
     #[test]
     fn at_keyword() {
-        let mut lexer = Token::lexer("＠｜識別子＠＠。《しきべつし》");
-        assert_eq!(lexer.next(), Some(Ok(Token::At)));
-        assert_eq!(lexer.next(), Some(Ok(Token::VerticalLine)));
-        assert_eq!(lexer.next(), Some(Ok(Token::Identifier(&"識別子"))));
-        assert_eq!(lexer.next(), Some(Ok(Token::TextAt)));
-        assert_eq!(lexer.slice(), "＠＠");
-        assert_eq!(lexer.next(), Some(Ok(Token::TextOthers(&"。"))));
-        assert_eq!(lexer.next(), Some(Ok(Token::LeftDoubleAngleBracket)));
-        assert_eq!(lexer.next(), Some(Ok(Token::Identifier(&"しきべつし"))));
-        assert_eq!(lexer.next(), Some(Ok(Token::RightDoubleAngleBracket)));
-        assert_eq!(lexer.next(), None);
+        let mut lexer = Token::lexer("｜識別子＠＠。《しきべつし》");
+        let mut x = || lexer.next();
+        let mut y = || x().unwrap().unwrap();
+        assert_eq!(y(), Token::VerticalLine);
+        assert_eq!(y(), Token::Identifier(&"識別子"));
+        assert_eq!(y(), Token::TextEscape);
+        assert_eq!(y(), Token::TextOthers(&"。"));
+        assert_eq!(y(), Token::LeftDoubleAngleBracket);
+        assert_eq!(y(), Token::Identifier(&"しきべつし"));
+        assert_eq!(y(), Token::RightDoubleAngleBracket);
+        assert_eq!(x(), None);
     }
 
     #[test]
@@ -194,11 +185,11 @@ mod tests {
         assert_eq!(lexer.span(), 8..11);
         assert_eq!(lexer.next(), Some(Ok(Token::Spaces(&" "))));
         assert_eq!(lexer.span(), 11..12);
-        assert_eq!(lexer.next(), Some(Ok(Token::TextAt)));
+        assert_eq!(lexer.next(), Some(Ok(Token::TextEscape)));
         assert_eq!(lexer.span(), 12..18);
         assert_eq!(lexer.next(), Some(Ok(Token::Spaces(&" "))));
         assert_eq!(lexer.span(), 18..19);
-        assert_eq!(lexer.next(), Some(Ok(Token::TextAt)));
+        assert_eq!(lexer.next(), Some(Ok(Token::TextEscape)));
         assert_eq!(lexer.span(), 19..21);
         assert_eq!(lexer.next(), Some(Ok(Token::Spaces(&" "))));
         assert_eq!(lexer.span(), 21..22);
