@@ -1,6 +1,7 @@
 use logos::Logos;
 
 #[derive(Logos, Debug, Clone, Copy, PartialEq, Hash)]
+#[logos(error = LexerError)]
 pub enum Token<'a> {
     //#[error]
     //Error,
@@ -76,6 +77,17 @@ pub enum Token<'a> {
 
     #[regex(r"[^\r\n \t\u3000@＠:：%％\|｜《》_\p{XID_Start}]+")]
     TextOthers(&'a str),
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Hash)]
+pub enum LexerError {
+    Default,
+}
+
+impl Default for LexerError {
+    fn default() -> Self {
+        LexerError::Default
+    }
 }
 
 #[cfg(test)]
