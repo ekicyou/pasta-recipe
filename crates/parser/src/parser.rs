@@ -11,9 +11,6 @@ struct Token<'a> {
 
 #[derive(thiserror::Error, Debug, Clone, Copy, PartialEq, Hash)]
 pub enum ParserError {
-    #[error("default")]
-    Default,
-
     #[error("lexer error {0}")]
     Lexer(#[from] lexer::LexerError),
 }
