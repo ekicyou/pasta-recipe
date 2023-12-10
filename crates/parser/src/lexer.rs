@@ -74,7 +74,7 @@ pub enum Token<'a> {
     #[token("＃＃")]
     TextEscape,
 
-    #[regex(r"[^ \t\u3000@＠:：%％\|｜《》\r\n_\p{XID_Start}]+")]
+    #[regex(r"[^\r\n \t\u3000@＠:：%％\|｜《》_\p{XID_Start}]+")]
     TextOthers(&'a str),
     //#[regex(r"[^\r\n \t\u{3000}@＠\|｜:：%％/《》]+")]
     //Text(&'a str),
